@@ -6,10 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 import jvm.pablohdz.myfilesapi.dto.UserRequest;
 import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
 import jvm.pablohdz.myfilesapi.model.User;
+import jvm.pablohdz.myfilesapi.model.VerificationToken;
 import jvm.pablohdz.myfilesapi.repository.UserRepository;
+import jvm.pablohdz.myfilesapi.repository.VerificationTokenRepository;
 import jvm.pablohdz.myfilesapi.service.UserService;
 
 @Service
@@ -17,21 +21,31 @@ public class LocalUserService implements UserService {
     private final Logger logger = LoggerFactory.getLogger(LocalUserService.class.getSimpleName());
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final VerificationTokenRepository verificationTokenRepository;
 
 
     @Autowired
-    public LocalUserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public LocalUserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                            VerificationTokenRepository verificationTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.verificationTokenRepository = verificationTokenRepository;
     }
 
     @Override
     public void create(UserRequest request) {
         User user = createUserToSaved(request);
-        createNewUser(user);
+        User userSaved = createNewUser(user);
 
         logger.info("a new user was created with name: {} and email: {}",
             user.getFirstname(), user.getEmail());
+
+        VerificationToken token = new VerificationToken();
+        token.setToken(UUID.randomUUID().toString());
+        token.setUser(userSaved);
+
+        verificationTokenRepository.save(token);
+        // TODO: 10/12/2021 send email to notify the user was created
     }
 
     private User createUserToSaved(UserRequest request) {
@@ -46,9 +60,9 @@ public class LocalUserService implements UserService {
         return user;
     }
 
-    private void createNewUser(User user) {
+    private User createNewUser(User user) {
         try {
-            userRepository.save(user);
+            return userRepository.save(user);
         } catch (Exception exception) {
             logger.error("you try save an user already been registered with email: {}",
                 user.getEmail());

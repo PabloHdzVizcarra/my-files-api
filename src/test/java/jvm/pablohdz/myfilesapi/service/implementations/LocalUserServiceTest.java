@@ -12,6 +12,7 @@ import jvm.pablohdz.myfilesapi.dto.UserRequest;
 import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.UserRepository;
+import jvm.pablohdz.myfilesapi.repository.VerificationTokenRepository;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -23,10 +24,12 @@ class LocalUserServiceTest {
     private UserRepository userRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private VerificationTokenRepository verificationTokenRepository;
 
     @BeforeEach
     void setUp() {
-        userService = new LocalUserService(userRepository, passwordEncoder);
+        userService = new LocalUserService(userRepository, passwordEncoder, verificationTokenRepository);
     }
 
     @Test

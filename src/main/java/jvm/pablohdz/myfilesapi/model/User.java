@@ -9,7 +9,6 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
@@ -21,7 +20,7 @@ public class User {
     @Column(name = "user_id", nullable = false, unique = true)
     private String id;
 
-    @Column(name = "user_username", nullable = false)
+    @Column(name = "user_username", nullable = false, unique = true)
     private String username;
 
     @Column(name = "user_firstname", nullable = false)
@@ -32,6 +31,9 @@ public class User {
 
     @Column(name = "user_number_employee", nullable = false)
     private Integer numberEmployee;
+
+    @Column(name = "user_email", unique = true, nullable = false)
+    private String email;
 
     @CreatedDate
     @Column(name = "user_create_at", nullable = false, updatable = false)
@@ -110,5 +112,13 @@ public class User {
 
     public void setUpdateAt(Date updateAt) {
         this.updateAt = updateAt;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

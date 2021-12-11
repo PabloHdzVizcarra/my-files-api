@@ -1,6 +1,7 @@
 package jvm.pablohdz.myfilesapi.dto;
 
 import javax.validation.constraints.Digits;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -31,6 +32,9 @@ public class UserRequest {
         message = "employee number must be length equal to eight digits")
     @Size(min = 8, max = 8, message = "employee number must be length equal to eight digits")
     private String numEmployee;
+
+    @Email(message = "the email must be valid")
+    private String email;
 
     public UserRequest() {
     }
@@ -65,5 +69,13 @@ public class UserRequest {
 
     public void setNumEmployee(String numEmployee) {
         this.numEmployee = numEmployee;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

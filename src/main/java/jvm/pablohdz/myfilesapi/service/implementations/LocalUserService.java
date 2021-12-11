@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jvm.pablohdz.myfilesapi.dto.UserRequest;
+import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.UserRepository;
 import jvm.pablohdz.myfilesapi.service.UserService;
@@ -26,7 +27,6 @@ public class LocalUserService implements UserService {
 
     @Override
     public void create(UserRequest request) {
-        // TODO: 10/12/2021 verify if the user exists before to try save
         User user = createUserToSaved(request);
         createNewUser(user);
 
@@ -35,7 +35,6 @@ public class LocalUserService implements UserService {
     }
 
     private User createUserToSaved(UserRequest request) {
-
         User user = new User();
         user.setFirstname(request.getFirstName());
         user.setLastname(request.getLastName());
@@ -51,7 +50,9 @@ public class LocalUserService implements UserService {
         try {
             userRepository.save(user);
         } catch (Exception exception) {
-            exception.printStackTrace();
+            logger.error("you try save an user already been registered with email: {}",
+                user.getEmail());
+            throw new DataAlreadyRegistered(user.getEmail());
         }
     }
 }

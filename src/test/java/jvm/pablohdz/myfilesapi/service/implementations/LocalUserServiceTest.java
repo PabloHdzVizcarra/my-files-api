@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import jvm.pablohdz.myfilesapi.dto.UserRequest;
+import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.UserRepository;
 
@@ -33,13 +34,25 @@ class LocalUserServiceTest {
         // Arrange
         User user = createMockUser();
         UserRequest userRequest = createMockUserRequest();
+        // Act
         when(userRepository.save(any()))
             .thenReturn(user);
-
-        // Act
         // Assert
         Assertions.assertThatCode(() -> userService.create(userRequest))
             .doesNotThrowAnyException();
+    }
+
+    @Test
+    void givenUserExisting_whenCreate_thenThrownException() {
+        // Arrange
+        UserRequest mockUserRequest = createMockUserRequest();
+        // Act
+        when(userRepository.save(any()))
+            .thenThrow(DataAlreadyRegistered.class);
+        // Assert
+        Assertions.assertThatThrownBy(() -> userService.create(mockUserRequest))
+            .isInstanceOf(DataAlreadyRegistered.class)
+            .hasMessageContaining(mockUserRequest.getEmail());
     }
 
     private UserRequest createMockUserRequest() {

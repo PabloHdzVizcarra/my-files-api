@@ -36,6 +36,11 @@ public class UserRequest {
     @Email(message = "the email must be valid")
     private String email;
 
+    @Pattern(regexp = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$",
+        message = "the password must be contain an integer, an upper case letter, a lower case " +
+            "letter, a special character and minimum eight in length")
+    private String password;
+
     public UserRequest() {
     }
 
@@ -77,5 +82,13 @@ public class UserRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

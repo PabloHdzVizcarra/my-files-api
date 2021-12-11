@@ -35,6 +35,9 @@ public class User {
     @Column(name = "user_email", unique = true, nullable = false)
     private String email;
 
+    @Column(name = "user_password", nullable = false)
+    private String password;
+
     @CreatedDate
     @Column(name = "user_create_at", nullable = false, updatable = false)
     private Date createdAt;
@@ -120,5 +123,13 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

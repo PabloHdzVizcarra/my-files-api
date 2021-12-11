@@ -2,10 +2,15 @@ package jvm.pablohdz.myfilesapi.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.UnknownHostException;
 
 import javax.validation.Valid;
 
@@ -25,9 +30,10 @@ public class UserResource {
     @PostMapping(
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
-    public String create(@Valid @RequestBody UserRequest userRequest) {
+    public ResponseEntity<String> create(@Valid @RequestBody UserRequest userRequest) throws UnknownHostException {
         userService.create(userRequest);
-        return "create user its work";
+        URI location = URI.create("/api/users" + userRequest.getUsername());
+        return ResponseEntity.created(location).build();
     }
 
 }

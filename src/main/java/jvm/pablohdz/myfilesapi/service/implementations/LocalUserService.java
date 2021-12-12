@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -96,17 +97,15 @@ public class LocalUserService implements UserService {
     String password = loginRequest.getPassword();
     User userFound = isValidUsername(username);
 
-    // TODO: 12/12/2021 setup user to context security
-//    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-//        new UsernamePasswordAuthenticationToken(username, password);
-//    Authentication authenticate =
-//        authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+        new UsernamePasswordAuthenticationToken(username, password);
+    Authentication authenticate =
+        authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+    SecurityContextHolder.getContext().setAuthentication(authenticate);
 
-    // TODO: 12/12/2021 return token generated
     String token = jwtProvider.generateToken(userFound.getUsername());
-    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-    return new AuthenticationResponse(
-        token, username, dtf.format(LocalDateTime.now()));
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss yyyy-MM-dd");
+    return new AuthenticationResponse(token, username, dtf.format(LocalDateTime.now()));
   }
 
   private User isValidUsername(String username) {

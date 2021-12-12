@@ -100,10 +100,8 @@ class LocalUserServiceTest {
     void givenValidToken_whenActiveAccount_thenChangeStatusUserActive() {
         //Arrange
         String validationToken = "valid-token";
-        VerificationToken verificationToken = new VerificationToken();
-        verificationToken.setToken(validationToken);
-        verificationToken.setId(1L);
         User mockUser = createMockUser();
+        VerificationToken verificationToken = createMockVerificationToken(validationToken);
         verificationToken.setUser(mockUser);
         //Act
         when(verificationTokenRepository.findByToken(validationToken))
@@ -111,10 +109,18 @@ class LocalUserServiceTest {
         when(userRepository.save(mockUser))
                 .thenReturn(mockUser);
         userService.activeAccount(validationToken);
+
         Boolean actualActiveStatusUser = mockUser.getActive();
         //Assert
         Assertions.assertThat(actualActiveStatusUser)
                 .withFailMessage("the status of the user is not changed")
                 .isTrue();
+    }
+
+    private VerificationToken createMockVerificationToken(String validationToken) {
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken(validationToken);
+        verificationToken.setId(1L);
+        return verificationToken;
     }
 }

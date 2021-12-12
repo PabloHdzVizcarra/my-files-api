@@ -11,7 +11,7 @@ public interface UserService {
     void create(UserRequest request);
 
     /**
-     * active a user already registered
+     * Active a user that has already been registered
      *
      * @param token a validationToken already saved
      */

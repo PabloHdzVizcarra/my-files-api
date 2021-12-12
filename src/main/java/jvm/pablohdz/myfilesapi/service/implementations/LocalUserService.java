@@ -54,18 +54,22 @@ public class LocalUserService implements UserService {
         verificationTokenRepository.save(token);
         emailService.sendEmail(new NotificationEmail("please active your account " +
                 userSaved.getEmail(), userSaved.getEmail(),
-                "http://localhost:8080/api/auth/account.verification/" + tokenId));
-
+                "http://localhost:8080/api/auth/active.account/" + tokenId));
     }
 
     @Override
     public void activeAccount(String token) {
         VerificationToken foundVerificationToken = isValidToken(token);
+        updateActiveStatusFromTheUser(foundVerificationToken);
+
+        logger.info("updated status of the user: {}, the user is currently active now",
+                foundVerificationToken.getUser().getFirstname());
+    }
+
+    private void updateActiveStatusFromTheUser(VerificationToken foundVerificationToken) {
         User user = foundVerificationToken.getUser();
         user.setActive(true);
         userRepository.save(user);
-        logger.info("updated status of the user: {}, the user is currently active now",
-                user.getFirstname());
     }
 
     private VerificationToken isValidToken(String token) {

@@ -1,9 +1,12 @@
 package jvm.pablohdz.myfilesapi.jwt;
 
+import static org.mockito.Mockito.when;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -11,15 +14,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class IoJjwtJwtProviderTest {
   private JwtProvider jwtProvider;
+  @Mock private PasswordStorageToken passwordStorageToken;
 
   @BeforeEach
   void setUp() {
-    jwtProvider = new IoJjwtJwtProvider();
-    MockitoAnnotations.openMocks(this);
-    String secretKey = "^BW5-QQ,MBs^kU)@~An#(WHEJL2{7he?kav/,vJPr28qrxbNZk~+tL;PW@3#>[.";
-    Integer expirationTime = 60000;
-    ReflectionTestUtils.setField(jwtProvider, "SECRET_KEY", secretKey);
-    ReflectionTestUtils.setField(jwtProvider, "EXPIRATION_TIME", expirationTime);
+    when(passwordStorageToken.getPasswordToSignToken()).thenReturn("secret-password");
+    when(passwordStorageToken.getExpirationTokenTime()).thenReturn(1000 * 60 * 10);
+    jwtProvider = new IoJjwtJwtProvider(passwordStorageToken);
   }
 
   @Test
@@ -27,8 +28,6 @@ class IoJjwtJwtProviderTest {
     String username = "john";
     String actualToken = jwtProvider.generateToken(username);
 
-    Assertions.assertThat(actualToken)
-        .isInstanceOf(String.class);
+    Assertions.assertThat(actualToken).isInstanceOf(String.class);
   }
-
 }

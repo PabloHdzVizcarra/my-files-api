@@ -16,11 +16,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
-            .authorizeRequests()
-            .antMatchers(HttpMethod.POST, "/api/users").permitAll()
-            .antMatchers(PATHS_URLS_SWAGGER).permitAll()
-            .anyRequest()
-            .authenticated();
+                .authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/api/users").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/auth/active.account/*").permitAll()
+                .antMatchers(PATHS_URLS_SWAGGER).permitAll()
+                .anyRequest()
+                .authenticated();
     }
 
     @Bean

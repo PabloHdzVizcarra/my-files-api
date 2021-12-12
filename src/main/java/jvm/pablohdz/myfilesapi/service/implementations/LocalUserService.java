@@ -1,10 +1,19 @@
 package jvm.pablohdz.myfilesapi.service.implementations;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import jvm.pablohdz.myfilesapi.dto.AuthenticationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -14,6 +23,7 @@ import jvm.pablohdz.myfilesapi.dto.UserRequest;
 import jvm.pablohdz.myfilesapi.exception.AuthenticationCredentialsInvalid;
 import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
 import jvm.pablohdz.myfilesapi.exception.ValidationTokenNotFound;
+import jvm.pablohdz.myfilesapi.jwt.JwtProvider;
 import jvm.pablohdz.myfilesapi.model.NotificationEmail;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.model.VerificationToken;
@@ -29,17 +39,23 @@ public class LocalUserService implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final VerificationTokenRepository verificationTokenRepository;
   private final EmailService emailService;
+  private final AuthenticationManager authenticationManager;
+  private final JwtProvider jwtProvider;
 
   @Autowired
   public LocalUserService(
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
       VerificationTokenRepository verificationTokenRepository,
-      EmailService emailService) {
+      EmailService emailService,
+      AuthenticationManager authenticationManager,
+      JwtProvider jwtProvider) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.verificationTokenRepository = verificationTokenRepository;
     this.emailService = emailService;
+    this.authenticationManager = authenticationManager;
+    this.jwtProvider = jwtProvider;
   }
 
   @Override
@@ -74,12 +90,32 @@ public class LocalUserService implements UserService {
   }
 
   @Override
-  public void login(LoginRequest loginRequest) {
+  @Transactional(readOnly = true)
+  public AuthenticationResponse login(LoginRequest loginRequest) {
     String username = loginRequest.getUsername();
+    String password = loginRequest.getPassword();
+    User userFound = isValidUsername(username);
+
+    // TODO: 12/12/2021 setup user to context security
+//    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+//        new UsernamePasswordAuthenticationToken(username, password);
+//    Authentication authenticate =
+//        authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+
+    // TODO: 12/12/2021 return token generated
+    String token = jwtProvider.generateToken(userFound.getUsername());
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    return new AuthenticationResponse(
+        token, username, dtf.format(LocalDateTime.now()));
+  }
+
+  private User isValidUsername(String username) {
     Optional<User> optionalUser = userRepository.findByUsername(username);
 
     if (optionalUser.isEmpty())
       throw new AuthenticationCredentialsInvalid("the username provided is not valid");
+
+    return optionalUser.get();
   }
 
   private void updateActiveStatusFromTheUser(VerificationToken foundVerificationToken) {

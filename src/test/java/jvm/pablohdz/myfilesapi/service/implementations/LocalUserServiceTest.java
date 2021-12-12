@@ -6,16 +6,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import jvm.pablohdz.myfilesapi.dto.LoginRequest;
 import jvm.pablohdz.myfilesapi.dto.UserRequest;
 import jvm.pablohdz.myfilesapi.exception.AuthenticationCredentialsInvalid;
 import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
 import jvm.pablohdz.myfilesapi.exception.ValidationTokenNotFound;
+import jvm.pablohdz.myfilesapi.jwt.JwtProvider;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.model.VerificationToken;
 import jvm.pablohdz.myfilesapi.repository.UserRepository;
@@ -32,12 +33,18 @@ class LocalUserServiceTest {
   @Mock private PasswordEncoder passwordEncoder;
   @Mock private VerificationTokenRepository verificationTokenRepository;
   @Mock private EmailService emailService;
+  @Mock private AuthenticationManager authenticationManager;
+  @Mock private JwtProvider jwtProvider;
 
   @BeforeEach
   void setUp() {
     userService =
         new LocalUserService(
-            userRepository, passwordEncoder, verificationTokenRepository, emailService);
+            userRepository,
+            passwordEncoder,
+            verificationTokenRepository,
+            emailService,
+            authenticationManager, jwtProvider);
   }
 
   @Test
@@ -122,8 +129,7 @@ class LocalUserServiceTest {
     loginRequest.setUsername("wrong-username");
     loginRequest.setPassword("password-valid");
     // Act
-    when(userRepository.findByUsername(loginRequest.getUsername()))
-        .thenReturn(Optional.empty());
+    when(userRepository.findByUsername(loginRequest.getUsername())).thenReturn(Optional.empty());
     // Assert
     Assertions.assertThatThrownBy(() -> userService.login(loginRequest))
         .withFailMessage("the credentials provided from the request to login user are invalid")

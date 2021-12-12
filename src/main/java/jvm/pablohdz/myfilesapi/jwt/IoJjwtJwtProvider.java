@@ -13,7 +13,9 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import java.util.List;
 
 import io.jsonwebtoken.Jwts;
+import org.springframework.stereotype.Component;
 
+@Component
 public class IoJjwtJwtProvider implements JwtProvider {
   @Value("${jwt.secret-key}")
   private String SECRET_KEY;
@@ -41,5 +43,10 @@ public class IoJjwtJwtProvider implements JwtProvider {
         .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
         .signWith(signatureAlgorithm, signingKey)
         .compact();
+  }
+
+  @Override
+  public long getTimeExpirationToken() {
+    return EXPIRATION_TIME;
   }
 }

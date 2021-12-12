@@ -1,6 +1,8 @@
 package jvm.pablohdz.myfilesapi.api;
 
+import jvm.pablohdz.myfilesapi.dto.AuthenticationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +31,9 @@ public class AuthResource {
   }
 
   @PostMapping(value = "/login")
-  public void login(@Valid @RequestBody LoginRequest loginRequest) {
-    userService.login(loginRequest);
+  public ResponseEntity<AuthenticationResponse> login(
+      @Valid @RequestBody LoginRequest loginRequest) {
+    AuthenticationResponse response = userService.login(loginRequest);
+    return ResponseEntity.ok(response);
   }
 }

@@ -1,5 +1,6 @@
 package jvm.pablohdz.myfilesapi.service;
 
+import jvm.pablohdz.myfilesapi.dto.AuthenticationResponse;
 import jvm.pablohdz.myfilesapi.dto.LoginRequest;
 import jvm.pablohdz.myfilesapi.dto.UserRequest;
 
@@ -22,6 +23,7 @@ public interface UserService {
    * Login a user with username and password
    *
    * @param loginRequest data provided from the request
+   * @return contains the created token
    */
-  void login(LoginRequest loginRequest);
+  AuthenticationResponse login(LoginRequest loginRequest);
 }

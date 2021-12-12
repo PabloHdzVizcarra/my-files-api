@@ -61,17 +61,19 @@ public class LocalUserService implements UserService {
     @Override
     public void activeAccount(String token) {
         VerificationToken foundVerificationToken = isValidToken(token);
-
-
+        User user = foundVerificationToken.getUser();
+        user.setActive(true);
+        userRepository.save(user);
+        logger.info("updated status of the user: {}, the user is currently active now",
+                user.getFirstname());
     }
 
     private VerificationToken isValidToken(String token) {
         Optional<VerificationToken> optionalVerificationToken =
                 verificationTokenRepository.findByToken(token);
 
-        if (optionalVerificationToken.isEmpty()) {
+        if (optionalVerificationToken.isEmpty())
             throw new ValidationTokenNotFound(token);
-        }
 
         return optionalVerificationToken.get();
     }

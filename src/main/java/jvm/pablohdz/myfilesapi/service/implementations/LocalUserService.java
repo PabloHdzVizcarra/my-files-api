@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import jvm.pablohdz.myfilesapi.dto.LoginRequest;
 import jvm.pablohdz.myfilesapi.dto.UserRequest;
+import jvm.pablohdz.myfilesapi.exception.AuthenticationCredentialsInvalid;
 import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
 import jvm.pablohdz.myfilesapi.exception.ValidationTokenNotFound;
 import jvm.pablohdz.myfilesapi.model.NotificationEmail;
@@ -73,7 +74,13 @@ public class LocalUserService implements UserService {
   }
 
   @Override
-  public void login(LoginRequest loginRequest) {}
+  public void login(LoginRequest loginRequest) {
+    String username = loginRequest.getUsername();
+    Optional<User> optionalUser = userRepository.findByUsername(username);
+
+    if (optionalUser.isEmpty())
+      throw new AuthenticationCredentialsInvalid("the username provided is not valid");
+  }
 
   private void updateActiveStatusFromTheUser(VerificationToken foundVerificationToken) {
     User user = foundVerificationToken.getUser();

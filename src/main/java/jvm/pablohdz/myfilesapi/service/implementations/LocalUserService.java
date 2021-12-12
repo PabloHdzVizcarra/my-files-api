@@ -1,17 +1,28 @@
 package jvm.pablohdz.myfilesapi.service.implementations;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import jvm.pablohdz.myfilesapi.dto.AuthenticationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
 
+import jvm.pablohdz.myfilesapi.dto.LoginRequest;
 import jvm.pablohdz.myfilesapi.dto.UserRequest;
+import jvm.pablohdz.myfilesapi.exception.AuthenticationCredentialsInvalid;
 import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
 import jvm.pablohdz.myfilesapi.exception.ValidationTokenNotFound;
+import jvm.pablohdz.myfilesapi.jwt.JwtProvider;
 import jvm.pablohdz.myfilesapi.model.NotificationEmail;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.model.VerificationToken;
@@ -27,17 +38,23 @@ public class LocalUserService implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final VerificationTokenRepository verificationTokenRepository;
   private final EmailService emailService;
+  private final AuthenticationManager authenticationManager;
+  private final JwtProvider jwtProvider;
 
   @Autowired
   public LocalUserService(
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
       VerificationTokenRepository verificationTokenRepository,
-      EmailService emailService) {
+      EmailService emailService,
+      AuthenticationManager authenticationManager,
+      JwtProvider jwtProvider) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.verificationTokenRepository = verificationTokenRepository;
     this.emailService = emailService;
+    this.authenticationManager = authenticationManager;
+    this.jwtProvider = jwtProvider;
   }
 
   @Override
@@ -69,6 +86,39 @@ public class LocalUserService implements UserService {
     logger.info(
         "updated status of the user: {}, the user is currently active now",
         foundVerificationToken.getUser().getFirstname());
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public AuthenticationResponse login(LoginRequest loginRequest) {
+    String username = loginRequest.getUsername();
+    String password = loginRequest.getPassword();
+    User userFound = isValidUser(username);
+
+    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+        new UsernamePasswordAuthenticationToken(username, password);
+    Authentication authenticate =
+        authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+    SecurityContextHolder.getContext().setAuthentication(authenticate);
+
+    String token = jwtProvider.generateToken(userFound.getUsername());
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss yyyy-MM-dd");
+    return new AuthenticationResponse(token, username, dtf.format(LocalDateTime.now()));
+  }
+
+  /**
+   * verify if the username provided, set up assign a user saved
+   *
+   * @param username the username to try search
+   * @return the user found
+   */
+  private User isValidUser(String username) {
+    Optional<User> optionalUser = userRepository.findByUsername(username);
+
+    if (optionalUser.isEmpty())
+      throw new AuthenticationCredentialsInvalid("the username provided is not valid");
+
+    return optionalUser.get();
   }
 
   private void updateActiveStatusFromTheUser(VerificationToken foundVerificationToken) {

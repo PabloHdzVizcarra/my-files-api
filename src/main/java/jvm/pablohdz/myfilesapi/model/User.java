@@ -38,6 +38,9 @@ public class User {
     @Column(name = "user_password", nullable = false)
     private String password;
 
+    @Column(name = "user_active", nullable = false)
+    private Boolean active;
+
     @CreatedDate
     @Column(name = "user_create_at", nullable = false, updatable = false)
     private Date createdAt;
@@ -48,6 +51,7 @@ public class User {
 
     public User() {
         this.id = "us_" + UUID.randomUUID();
+        this.active = false;
     }
 
     @PrePersist
@@ -131,5 +135,13 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }

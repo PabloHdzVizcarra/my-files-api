@@ -6,3 +6,9 @@ spring:
     username: root
     password: my-secret-pw
     url: jdbc:mysql://192.168.100.53:3306/my_files
+  mail:
+    host: smtp.mailtrap.io
+    username: a485b95ef10ec0
+    password: 325b7ffe8ac37d
+    port: 25
+    protocol: smtp

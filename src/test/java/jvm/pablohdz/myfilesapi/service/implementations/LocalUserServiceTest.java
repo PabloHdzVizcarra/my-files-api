@@ -13,6 +13,7 @@ import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.UserRepository;
 import jvm.pablohdz.myfilesapi.repository.VerificationTokenRepository;
+import jvm.pablohdz.myfilesapi.service.EmailService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -26,10 +27,12 @@ class LocalUserServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private VerificationTokenRepository verificationTokenRepository;
+    @Mock
+    private EmailService emailService;
 
     @BeforeEach
     void setUp() {
-        userService = new LocalUserService(userRepository, passwordEncoder, verificationTokenRepository);
+        userService = new LocalUserService(userRepository, passwordEncoder, verificationTokenRepository, emailService);
     }
 
     @Test
@@ -38,11 +41,9 @@ class LocalUserServiceTest {
         User user = createMockUser();
         UserRequest userRequest = createMockUserRequest();
         // Act
-        when(userRepository.save(any()))
-            .thenReturn(user);
+        when(userRepository.save(any())).thenReturn(user);
         // Assert
-        Assertions.assertThatCode(() -> userService.create(userRequest))
-            .doesNotThrowAnyException();
+        Assertions.assertThatCode(() -> userService.create(userRequest)).doesNotThrowAnyException();
     }
 
     @Test
@@ -50,12 +51,11 @@ class LocalUserServiceTest {
         // Arrange
         UserRequest mockUserRequest = createMockUserRequest();
         // Act
-        when(userRepository.save(any()))
-            .thenThrow(DataAlreadyRegistered.class);
+        when(userRepository.save(any())).thenThrow(DataAlreadyRegistered.class);
         // Assert
         Assertions.assertThatThrownBy(() -> userService.create(mockUserRequest))
-            .isInstanceOf(DataAlreadyRegistered.class)
-            .hasMessageContaining(mockUserRequest.getEmail());
+                .isInstanceOf(DataAlreadyRegistered.class)
+                .hasMessageContaining(mockUserRequest.getEmail());
     }
 
     private UserRequest createMockUserRequest() {

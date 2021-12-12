@@ -8,9 +8,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import jvm.pablohdz.myfilesapi.dto.UserRequest;
 import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
+import jvm.pablohdz.myfilesapi.exception.ValidationTokenNotFound;
 import jvm.pablohdz.myfilesapi.model.User;
+import jvm.pablohdz.myfilesapi.model.VerificationToken;
 import jvm.pablohdz.myfilesapi.repository.UserRepository;
 import jvm.pablohdz.myfilesapi.repository.VerificationTokenRepository;
 import jvm.pablohdz.myfilesapi.service.EmailService;
@@ -76,5 +81,46 @@ class LocalUserServiceTest {
         user.setNumberEmployee(Integer.valueOf("00907810"));
         user.setEmail("example@example.com");
         return user;
+    }
+
+    @Test
+    void givenInvalidToken_whenActiveAccount_thenThrownException() {
+        //Arrange
+        String validationToken = "wrong-token";
+        //Act
+        when(verificationTokenRepository.findByToken(validationToken))
+                .thenReturn(Optional.empty());
+        //Assert
+        Assertions.assertThatThrownBy(() -> userService.activeAccount(validationToken))
+                .isInstanceOf(ValidationTokenNotFound.class)
+                .hasMessageContaining(validationToken);
+    }
+
+    @Test
+    void givenValidToken_whenActiveAccount_thenChangeStatusUserActive() {
+        //Arrange
+        String validationToken = "valid-token";
+        User mockUser = createMockUser();
+        VerificationToken verificationToken = createMockVerificationToken(validationToken);
+        verificationToken.setUser(mockUser);
+        //Act
+        when(verificationTokenRepository.findByToken(validationToken))
+                .thenReturn(Optional.of(verificationToken));
+        when(userRepository.save(mockUser))
+                .thenReturn(mockUser);
+        userService.activeAccount(validationToken);
+
+        Boolean actualActiveStatusUser = mockUser.getActive();
+        //Assert
+        Assertions.assertThat(actualActiveStatusUser)
+                .withFailMessage("the status of the user is not changed")
+                .isTrue();
+    }
+
+    private VerificationToken createMockVerificationToken(String validationToken) {
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken(validationToken);
+        verificationToken.setId(1L);
+        return verificationToken;
     }
 }

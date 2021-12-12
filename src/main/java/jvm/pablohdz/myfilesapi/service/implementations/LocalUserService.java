@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import jvm.pablohdz.myfilesapi.dto.UserRequest;
 import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
+import jvm.pablohdz.myfilesapi.exception.ValidationTokenNotFound;
 import jvm.pablohdz.myfilesapi.model.NotificationEmail;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.model.VerificationToken;
@@ -52,8 +54,32 @@ public class LocalUserService implements UserService {
         verificationTokenRepository.save(token);
         emailService.sendEmail(new NotificationEmail("please active your account " +
                 userSaved.getEmail(), userSaved.getEmail(),
-                "http://localhost:8080/api/auth/account.verification/" + tokenId));
+                "http://localhost:8080/api/auth/active.account/" + tokenId));
+    }
 
+    @Override
+    public void activeAccount(String token) {
+        VerificationToken foundVerificationToken = isValidToken(token);
+        updateActiveStatusFromTheUser(foundVerificationToken);
+
+        logger.info("updated status of the user: {}, the user is currently active now",
+                foundVerificationToken.getUser().getFirstname());
+    }
+
+    private void updateActiveStatusFromTheUser(VerificationToken foundVerificationToken) {
+        User user = foundVerificationToken.getUser();
+        user.setActive(true);
+        userRepository.save(user);
+    }
+
+    private VerificationToken isValidToken(String token) {
+        Optional<VerificationToken> optionalVerificationToken =
+                verificationTokenRepository.findByToken(token);
+
+        if (optionalVerificationToken.isEmpty())
+            throw new ValidationTokenNotFound(token);
+
+        return optionalVerificationToken.get();
     }
 
     private User createUserToSaved(UserRequest request) {

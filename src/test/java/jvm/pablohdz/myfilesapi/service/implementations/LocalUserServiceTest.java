@@ -44,7 +44,8 @@ class LocalUserServiceTest {
             passwordEncoder,
             verificationTokenRepository,
             emailService,
-            authenticationManager, jwtProvider);
+            authenticationManager,
+            jwtProvider);
   }
 
   @Test

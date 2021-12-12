@@ -1,9 +1,7 @@
 package jvm.pablohdz.myfilesapi.service.implementations;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import jvm.pablohdz.myfilesapi.dto.AuthenticationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +93,7 @@ public class LocalUserService implements UserService {
   public AuthenticationResponse login(LoginRequest loginRequest) {
     String username = loginRequest.getUsername();
     String password = loginRequest.getPassword();
-    User userFound = isValidUsername(username);
+    User userFound = isValidUser(username);
 
     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
         new UsernamePasswordAuthenticationToken(username, password);
@@ -108,7 +106,13 @@ public class LocalUserService implements UserService {
     return new AuthenticationResponse(token, username, dtf.format(LocalDateTime.now()));
   }
 
-  private User isValidUsername(String username) {
+  /**
+   * verify if the username provided, set up assign a user saved
+   *
+   * @param username the username to try search
+   * @return the user found
+   */
+  private User isValidUser(String username) {
     Optional<User> optionalUser = userRepository.findByUsername(username);
 
     if (optionalUser.isEmpty())

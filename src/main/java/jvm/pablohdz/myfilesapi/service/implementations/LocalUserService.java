@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import jvm.pablohdz.myfilesapi.dto.UserRequest;
 import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
+import jvm.pablohdz.myfilesapi.exception.ValidationTokenNotFound;
 import jvm.pablohdz.myfilesapi.model.NotificationEmail;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.model.VerificationToken;
@@ -54,6 +56,24 @@ public class LocalUserService implements UserService {
                 userSaved.getEmail(), userSaved.getEmail(),
                 "http://localhost:8080/api/auth/account.verification/" + tokenId));
 
+    }
+
+    @Override
+    public void activeAccount(String token) {
+        VerificationToken foundVerificationToken = isValidToken(token);
+
+
+    }
+
+    private VerificationToken isValidToken(String token) {
+        Optional<VerificationToken> optionalVerificationToken =
+                verificationTokenRepository.findByToken(token);
+
+        if (optionalVerificationToken.isEmpty()) {
+            throw new ValidationTokenNotFound(token);
+        }
+
+        return optionalVerificationToken.get();
     }
 
     private User createUserToSaved(UserRequest request) {

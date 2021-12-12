@@ -8,8 +8,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 import jvm.pablohdz.myfilesapi.dto.UserRequest;
 import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
+import jvm.pablohdz.myfilesapi.exception.ValidationTokenNotFound;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.UserRepository;
 import jvm.pablohdz.myfilesapi.repository.VerificationTokenRepository;
@@ -76,5 +79,18 @@ class LocalUserServiceTest {
         user.setNumberEmployee(Integer.valueOf("00907810"));
         user.setEmail("example@example.com");
         return user;
+    }
+
+    @Test
+    void givenInvalidToken_whenActiveAccount_thenThrownException() {
+        //Arrange
+        String validationToken = "wrong-token";
+        //Act
+        when(verificationTokenRepository.findByToken(validationToken))
+                .thenReturn(Optional.empty());
+        //Assert
+        Assertions.assertThatThrownBy(() -> userService.activeAccount(validationToken))
+                .isInstanceOf(ValidationTokenNotFound.class)
+                .hasMessageContaining(validationToken);
     }
 }

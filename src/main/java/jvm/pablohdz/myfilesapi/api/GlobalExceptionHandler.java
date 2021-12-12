@@ -15,24 +15,21 @@ import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(DataAlreadyRegistered.class)
-    public ResponseEntity<ErrorResponse> handleDataAlreadyRegistered(
-        DataAlreadyRegistered exception) {
-        String errorMessage = exception.getMessage();
-        Map<String, List<String>> errors = new HashMap<>();
-        errors.put("user", List.of(errorMessage));
-        // TODO: 10/12/2021 refactor ErrorResponse class
+  @ExceptionHandler(DataAlreadyRegistered.class)
+  public ResponseEntity<ErrorResponse> handleDataAlreadyRegistered(
+      DataAlreadyRegistered exception) {
+    String errorMessage = exception.getMessage();
+    Map<String, List<String>> errors = new HashMap<>();
+    errors.put("user", List.of(errorMessage));
 
-        ErrorResponse errorResponse = new ErrorResponse(
+    ErrorResponse errorResponse =
+        new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
             HttpStatus.BAD_REQUEST.toString(),
             HttpStatus.BAD_REQUEST,
             "",
-            errors
-        );
+            errors);
 
-        return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(errorResponse);
-    }
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+  }
 }

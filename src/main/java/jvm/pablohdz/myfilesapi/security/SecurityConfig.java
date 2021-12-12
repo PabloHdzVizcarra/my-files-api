@@ -13,19 +13,23 @@ import static jvm.pablohdz.myfilesapi.configuration.SwaggerConfig.PATHS_URLS_SWA
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/api/users").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/auth/active.account/**").permitAll()
-                .antMatchers(PATHS_URLS_SWAGGER).permitAll()
-                .anyRequest()
-                .authenticated();
-    }
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+    http.csrf()
+        .disable()
+        .authorizeRequests()
+        .antMatchers(HttpMethod.POST, "/api/users", "/api/auth/login")
+        .permitAll()
+        .antMatchers(HttpMethod.GET, "/api/auth/active.account/**")
+        .permitAll()
+        .antMatchers(PATHS_URLS_SWAGGER)
+        .permitAll()
+        .anyRequest()
+        .authenticated();
+  }
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+  @Bean
+  PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 }

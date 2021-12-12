@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.UUID;
 
+import jvm.pablohdz.myfilesapi.dto.LoginRequest;
 import jvm.pablohdz.myfilesapi.dto.UserRequest;
 import jvm.pablohdz.myfilesapi.exception.DataAlreadyRegistered;
 import jvm.pablohdz.myfilesapi.exception.ValidationTokenNotFound;
@@ -70,6 +71,9 @@ public class LocalUserService implements UserService {
         "updated status of the user: {}, the user is currently active now",
         foundVerificationToken.getUser().getFirstname());
   }
+
+  @Override
+  public void login(LoginRequest loginRequest) {}
 
   private void updateActiveStatusFromTheUser(VerificationToken foundVerificationToken) {
     User user = foundVerificationToken.getUser();

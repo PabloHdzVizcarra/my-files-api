@@ -14,14 +14,12 @@ import javax.persistence.Table;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
-/**
- * Represents a CSV file stored
- * */
+/** Represents a CSV file stored */
 @Entity
 @Table(name = "file")
 public class MyFile {
   @Id
-  @Column(name = "file_id")
+  @Column(name = "file_id", nullable = false)
   private String id;
 
   @Column(name = "file_storage_id", nullable = false)
@@ -94,21 +92,5 @@ public class MyFile {
 
   public void setUser(User user) {
     this.user = user;
-  }
-
-  public Date getCreatedAt() {
-    return createdAt;
-  }
-
-  public void setCreatedAt(Date createdAt) {
-    this.createdAt = createdAt;
-  }
-
-  public Date getUpdateAt() {
-    return updateAt;
-  }
-
-  public void setUpdateAt(Date updateAt) {
-    this.updateAt = updateAt;
   }
 }

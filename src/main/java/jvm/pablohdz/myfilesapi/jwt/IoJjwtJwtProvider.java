@@ -1,26 +1,25 @@
 package jvm.pablohdz.myfilesapi.jwt;
 
-import io.jsonwebtoken.SignatureAlgorithm;
+import static io.jsonwebtoken.Jwts.parserBuilder;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
-import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
-
-import java.util.List;
-
-import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -44,10 +43,6 @@ public class IoJjwtJwtProvider implements JwtProvider {
   public String generateToken(String username) {
     List<GrantedAuthority> grantedAuthorities =
         AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER");
-    byte[] apiKeySecretBytes =
-        DatatypeConverter.parseBase64Binary(passwordStorageToken.getPasswordToSignToken());
-    SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
-    Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
 
     return Jwts.builder()
         .setId("my.files.jwt")
@@ -59,7 +54,7 @@ public class IoJjwtJwtProvider implements JwtProvider {
                 .collect(Collectors.toList()))
         .setIssuedAt(new Date(System.currentTimeMillis()))
         .setExpiration(
-            new Date(System.currentTimeMillis() * passwordStorageToken.getExpirationTokenTime()))
+            Date.from(Instant.now().plusMillis(passwordStorageToken.getExpirationTokenTime())))
         .signWith(getPrivateKey())
         .compact();
   }
@@ -79,7 +74,18 @@ public class IoJjwtJwtProvider implements JwtProvider {
   }
 
   @Override
-  public String getSecretKey() {
-    return passwordStorageToken.getPasswordToSignToken();
+  public String getUsernameFromToken(String token) {
+    Jws<Claims> jwtParser =
+        parserBuilder().setSigningKey(getPublicKey()).build().parseClaimsJws(token);
+
+    return jwtParser.getBody().getSubject();
+  }
+
+  private PublicKey getPublicKey() {
+    try {
+      return keyStore.getCertificate("my-files").getPublicKey();
+    } catch (KeyStoreException e) {
+      throw new IllegalStateException(e.getMessage());
+    }
   }
 }

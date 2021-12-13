@@ -2,14 +2,13 @@ package jvm.pablohdz.myfilesapi.jwt;
 
 import static org.mockito.Mockito.when;
 
+import java.util.Objects;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class IoJjwtJwtProviderTest {
@@ -29,5 +28,15 @@ class IoJjwtJwtProviderTest {
     String actualToken = jwtProvider.generateToken(username);
 
     Assertions.assertThat(actualToken).isInstanceOf(String.class);
+  }
+
+  @Test
+  void givenValidToken_whenValidate() {
+    String expectedUsername = "john";
+
+    String actualToken = jwtProvider.generateToken(expectedUsername);
+    String actualUsername = jwtProvider.getUsernameFromToken(actualToken);
+
+    Assertions.assertThat(Objects.equals(actualUsername, expectedUsername)).isTrue();
   }
 }

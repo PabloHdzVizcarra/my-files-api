@@ -1,9 +1,10 @@
-package jvm.pablohdz.myfilesapi.service;
+package jvm.pablohdz.myfilesapi.service.implementations;
 
 import java.util.Optional;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.UserRepository;
 import jvm.pablohdz.myfilesapi.security.UtilSecurityContext;
+import jvm.pablohdz.myfilesapi.service.AuthenticationService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 

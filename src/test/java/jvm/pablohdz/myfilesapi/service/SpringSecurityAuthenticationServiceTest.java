@@ -8,7 +8,7 @@ import java.util.Optional;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.UserRepository;
 import jvm.pablohdz.myfilesapi.security.UtilSecurityContext;
-import org.assertj.core.api.Assertions;
+import jvm.pablohdz.myfilesapi.service.implementations.SpringSecurityAuthenticationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

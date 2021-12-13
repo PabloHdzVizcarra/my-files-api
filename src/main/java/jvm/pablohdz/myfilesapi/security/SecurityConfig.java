@@ -9,25 +9,32 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static jvm.pablohdz.myfilesapi.configuration.SwaggerConfig.PATHS_URLS_SWAGGER;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
   private final UserDetailsService userDetailsService;
+  private final JWTAuthorizationFilter jwtAuthorizationFilter;
 
-  public SecurityConfig(UserDetailsService userDetailsService) {
+  public SecurityConfig(
+      UserDetailsService userDetailsService, JWTAuthorizationFilter jwtAuthorizationFilter) {
     this.userDetailsService = userDetailsService;
+    this.jwtAuthorizationFilter = jwtAuthorizationFilter;
   }
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    http.csrf()
-        .disable()
-        .authorizeRequests()
+    http.csrf().disable();
+    http.addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
+    http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+    http.authorizeRequests()
         .antMatchers(HttpMethod.POST, "/api/users", "/api/auth/login")
         .permitAll()
         .antMatchers(HttpMethod.GET, "/api/auth/active.account/**")

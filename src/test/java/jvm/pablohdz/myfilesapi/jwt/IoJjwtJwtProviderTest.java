@@ -1,7 +1,9 @@
 package jvm.pablohdz.myfilesapi.jwt;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
 
+import io.jsonwebtoken.Claims;
 import java.util.Objects;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +48,18 @@ class IoJjwtJwtProviderTest {
 
     boolean isValidToken = jwtProvider.validateToken(token);
 
-    Assertions.assertThat(isValidToken)
-        .isTrue();
+    Assertions.assertThat(isValidToken).isTrue();
+  }
+
+  @Test
+  void givenValidToken_whenGetBody_thenCorrectBody() {
+    // Arrange
+    String expectedSubject = "iron.man";
+    String token = jwtProvider.generateToken(expectedSubject);
+    // Act
+    Claims body = jwtProvider.getBodyFromJwt(token);
+    String currentSubject = body.getSubject();
+    // Assert
+    assertThat(expectedSubject.equals(currentSubject)).isTrue();
   }
 }

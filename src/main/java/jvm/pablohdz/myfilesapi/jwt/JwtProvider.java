@@ -1,5 +1,7 @@
 package jvm.pablohdz.myfilesapi.jwt;
 
+import io.jsonwebtoken.Claims;
+
 public interface JwtProvider {
   String generateToken(String username);
 
@@ -13,4 +15,6 @@ public interface JwtProvider {
   String getUsernameFromToken(String token);
 
   boolean validateToken(String token);
+
+  Claims getBodyFromJwt(String token);
 }

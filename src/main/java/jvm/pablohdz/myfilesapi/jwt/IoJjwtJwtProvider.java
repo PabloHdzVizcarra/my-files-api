@@ -4,6 +4,7 @@ import static io.jsonwebtoken.Jwts.parserBuilder;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,6 +80,12 @@ public class IoJjwtJwtProvider implements JwtProvider {
         parserBuilder().setSigningKey(getPublicKey()).build().parseClaimsJws(token);
 
     return jwtParser.getBody().getSubject();
+  }
+
+  @Override
+  public boolean validateToken(String token) {
+    parserBuilder().setSigningKey(getPublicKey()).build().parseClaimsJws(token);
+    return true;
   }
 
   private PublicKey getPublicKey() {

@@ -31,12 +31,22 @@ class IoJjwtJwtProviderTest {
   }
 
   @Test
-  void givenValidToken_whenValidate() {
+  void givenValidToken_whenGetUsernameFromToken() {
     String expectedUsername = "john";
 
     String actualToken = jwtProvider.generateToken(expectedUsername);
     String actualUsername = jwtProvider.getUsernameFromToken(actualToken);
 
     Assertions.assertThat(Objects.equals(actualUsername, expectedUsername)).isTrue();
+  }
+
+  @Test
+  void givenValidToken_whenValidate() {
+    String token = jwtProvider.generateToken("iron.man");
+
+    boolean isValidToken = jwtProvider.validateToken(token);
+
+    Assertions.assertThat(isValidToken)
+        .isTrue();
   }
 }

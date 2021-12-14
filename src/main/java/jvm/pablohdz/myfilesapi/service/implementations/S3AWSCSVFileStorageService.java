@@ -42,6 +42,6 @@ public class S3AWSCSVFileStorageService implements CSVFileStorageService {
   }
 
   private String generateUniqueKeyToFile() {
-    return "csv_" + UUID.randomUUID();
+    return "file.csv_" + UUID.randomUUID();
   }
 }

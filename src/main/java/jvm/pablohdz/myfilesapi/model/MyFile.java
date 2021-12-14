@@ -44,7 +44,7 @@ public class MyFile {
   private Date updateAt;
 
   public MyFile() {
-    this.id = "fi_" + UUID.randomUUID();
+    this.id = "file_" + UUID.randomUUID();
   }
 
   @PrePersist

@@ -1,5 +1,7 @@
 package jvm.pablohdz.myfilesapi.service.implementations;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,11 +20,13 @@ public class S3AWSCSVFileStorageService implements CSVFileStorageService {
   private String prefixKey;
 
   @Override
-  public String upload(byte[] fileBytes) {
+  public String upload(byte[] fileBytes, String fileName) {
     S3Client s3Client = createS3Client();
     String keyToFile = pathToFile();
+    Map<String, String> metadata = new HashMap<>();
+    metadata.put("file.name", fileName);
     PutObjectRequest putObjectRequest =
-        PutObjectRequest.builder().bucket(bucketName).key(keyToFile).build();
+        PutObjectRequest.builder().bucket(bucketName).metadata(metadata).key(keyToFile).build();
     s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileBytes));
 
     return keyToFile;

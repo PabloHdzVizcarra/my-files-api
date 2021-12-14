@@ -30,9 +30,10 @@ public class MyCSVService implements CSVService {
   @Override
   public void uploadFileCSV(MultipartFile csvFile) {
     byte[] bytes = parseMultipartFileToBytes(csvFile);
-    User currentUser = authenticationService.getCurrentUser();
-    String keyFile = csvFileStorageService.upload(bytes);
     String fileName = getFileName(csvFile);
+    User currentUser = authenticationService.getCurrentUser();
+    // TODO: 14/12/2021 before creating the file in S3 verify if it has already been registered
+    String keyFile = csvFileStorageService.upload(bytes, fileName);
     MyFile myFile = createFile(fileName, currentUser, keyFile);
 
     myFileRepository.save(myFile);
@@ -48,7 +49,7 @@ public class MyCSVService implements CSVService {
   }
 
   private String getFileName(MultipartFile csvFile) {
-    return csvFile.getName();
+    return csvFile.getOriginalFilename();
   }
 
   private byte[] parseMultipartFileToBytes(MultipartFile csvFile) {

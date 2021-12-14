@@ -12,34 +12,32 @@ import java.util.Map;
  */
 public class ErrorResponse {
     private HttpStatus status;
-    private Integer errorCode;
+    private Integer httpCode;
     private String message;
-    private String cause;
-    private Map<String, List<String>> error;
+    private Map<String, List<String>> errors;
     private String timestamp;
 
     public ErrorResponse() {
 
     }
 
-    public ErrorResponse(int value, String reasonPhrase, HttpStatus status, String message,
-                         Map<String, List<String>> errors) {
-        this.errorCode = value;
-        this.cause = reasonPhrase;
+    public ErrorResponse(int value, HttpStatus status, String message,
+        Map<String, List<String>> errors) {
+        this.httpCode = value;
         this.message = message;
         this.status = status;
-        this.error = errors;
+        this.errors = errors;
         this.timestamp = LocalDateTime
             .now()
             .format(DateTimeFormatter.ofPattern("hh:mm:ss yyyy-MM-dd"));
     }
 
-    public Integer getErrorCode() {
-        return errorCode;
+    public Integer getHttpCode() {
+        return httpCode;
     }
 
-    public void setErrorCode(Integer errorCode) {
-        this.errorCode = errorCode;
+    public void setHttpCode(Integer httpCode) {
+        this.httpCode = httpCode;
     }
 
     public String getMessage() {
@@ -50,20 +48,12 @@ public class ErrorResponse {
         this.message = message;
     }
 
-    public String getCause() {
-        return cause;
+    public Map<String, List<String>> getErrors() {
+        return errors;
     }
 
-    public void setCause(String cause) {
-        this.cause = cause;
-    }
-
-    public Map<String, List<String>> getError() {
-        return error;
-    }
-
-    public void setError(Map<String, List<String>> error) {
-        this.error = error;
+    public void setErrors(Map<String, List<String>> errors) {
+        this.errors = errors;
     }
 
     public String getTimestamp() {
@@ -81,4 +71,8 @@ public class ErrorResponse {
     public void setStatus(HttpStatus status) {
         this.status = status;
     }
+
+
+
+
 }

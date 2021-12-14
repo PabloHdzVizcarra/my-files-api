@@ -24,12 +24,7 @@ public class GlobalExceptionHandler {
     errors.put("user", List.of(errorMessage));
 
     ErrorResponse errorResponse =
-        new ErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            HttpStatus.BAD_REQUEST.toString(),
-            HttpStatus.BAD_REQUEST,
-            "",
-            errors);
+        new ErrorResponse(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST, "", errors);
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
   }
@@ -40,11 +35,11 @@ public class GlobalExceptionHandler {
     String errorMessage = exception.getMessage();
     Map<String, List<String>> errors = new HashMap<>();
     errors.put("file", List.of(errorMessage));
+    errors.put("type", List.of("file_already_exists"));
 
     ErrorResponse errorResponse =
         new ErrorResponse(
             HttpStatus.CONFLICT.value(),
-            HttpStatus.CONFLICT.toString(),
             HttpStatus.CONFLICT,
             "only can save a file with a different name please,  change the file or change the name of the file",
             errors);

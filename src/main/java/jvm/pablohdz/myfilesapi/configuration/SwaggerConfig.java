@@ -14,15 +14,16 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @EnableSwagger2
 public class SwaggerConfig {
-    public static final String[] PATHS_URLS_SWAGGER = {
-        "/v2/api-docs",
-        "/configuration/ui",
-        "/swagger-resources/**",
-        "/configuration/security",
-        "/swagger-ui/**",
-        "/webjars/**",
-        "/swagger-ui.html"
-    };
+  public static final String[] PATHS_URLS_SWAGGER = {
+    "/v2/api-docs/**",
+    "/configuration/ui",
+    "/swagger-resources/**",
+    "/configuration/security",
+    "/swagger-ui/**",
+    "/webjars/**",
+    "/swagger-ui.html",
+    "/v3/api-docs/**"
+  };
 
     @Bean
     public Docket api() {
@@ -36,9 +37,9 @@ public class SwaggerConfig {
 
     private ApiInfo getApiInfo() {
         return new ApiInfoBuilder()
-            .title("Todo API")
+            .title("MyFile API")
             .version("1.0")
-            .description("Api todo documentation")
+            .description("API MyFile documentation")
             .contact(new Contact(
                 "Pablo Hernandez",
                 "",

@@ -1,6 +1,7 @@
 package jvm.pablohdz.myfilesapi.aws;
 
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
@@ -19,6 +20,7 @@ import software.amazon.awssdk.services.ses.model.SesException;
 public class EmailServiceTest {
 
     @Test
+    @Disabled
     void sendEmail() {
         String sender = "seguimosenbibo@gmail.com";
         String recipient = "seguimosenbibo@gmail.com";
@@ -70,6 +72,7 @@ public class EmailServiceTest {
     }
 
     @Test
+    @Disabled
     void listIdentities() {
         Region region = Region.US_EAST_2;
         SesClient client = SesClient.builder()

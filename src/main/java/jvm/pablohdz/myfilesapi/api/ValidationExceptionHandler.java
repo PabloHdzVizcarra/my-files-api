@@ -37,11 +37,9 @@ public class ValidationExceptionHandler extends ResponseEntityExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(
             HttpStatus.UNPROCESSABLE_ENTITY.value(),
-            HttpStatus.UNPROCESSABLE_ENTITY.toString(),
             HttpStatus.UNPROCESSABLE_ENTITY,
             "invalid data form the request",
-            errors
-        );
+            errors);
 
         return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }

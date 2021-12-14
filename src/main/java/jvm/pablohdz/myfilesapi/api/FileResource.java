@@ -1,5 +1,6 @@
 package jvm.pablohdz.myfilesapi.api;
 
+import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.service.CSVService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,8 +23,8 @@ public class FileResource {
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<String> uploadCSVFile(@RequestParam("file") MultipartFile file) {
-    csvService.uploadFileCSV(file);
-    return ResponseEntity.status(HttpStatus.CREATED).body("file was created");
+  public ResponseEntity<CSVFileDto> uploadCSVFile(@RequestParam("file") MultipartFile file) {
+    CSVFileDto dto = csvService.uploadFileCSV(file);
+    return ResponseEntity.status(HttpStatus.CREATED).body(dto);
   }
 }

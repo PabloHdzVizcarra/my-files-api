@@ -37,11 +37,11 @@ public class MyFile {
 
   @CreatedDate
   @Column(name = "user_create_at", nullable = false, updatable = false)
-  private Date createdAt;
+  private Long createdAt;
 
   @LastModifiedDate
   @Column(name = "user_update_at")
-  private Date updateAt;
+  private Long updateAt;
 
   public MyFile() {
     this.id = "file_" + UUID.randomUUID();
@@ -49,13 +49,13 @@ public class MyFile {
 
   @PrePersist
   protected void prePersist() {
-    if (this.createdAt == null) createdAt = new Date();
-    if (this.updateAt == null) updateAt = new Date();
+    if (this.createdAt == null) createdAt = new Date().getTime();
+    if (this.updateAt == null) updateAt = new Date().getTime();
   }
 
   @PreUpdate
   protected void preUpdate() {
-    this.updateAt = new Date();
+    this.updateAt = new Date().getTime();
   }
 
   public String getId() {
@@ -92,5 +92,13 @@ public class MyFile {
 
   public void setUser(User user) {
     this.user = user;
+  }
+
+  public Long getCreatedAt() {
+    return createdAt;
+  }
+
+  public Long getUpdateAt() {
+    return updateAt;
   }
 }

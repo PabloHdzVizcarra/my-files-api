@@ -2,7 +2,9 @@ package jvm.pablohdz.myfilesapi.service.implementations;
 
 import java.io.IOException;
 import java.util.Optional;
+import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
+import jvm.pablohdz.myfilesapi.mapper.CSVFileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
@@ -11,6 +13,7 @@ import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
 import jvm.pablohdz.myfilesapi.service.CSVService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -18,28 +21,33 @@ public class MyCSVService implements CSVService {
   private final CSVFileStorageService csvFileStorageService;
   private final AuthenticationService authenticationService;
   private final MyFileRepository myFileRepository;
+  private final CSVFileMapper csvFileMapper;
 
   @Autowired
   public MyCSVService(
       CSVFileStorageService csvFileStorageService,
       AuthenticationService authenticationService,
-      MyFileRepository myFileRepository) {
+      MyFileRepository myFileRepository,
+      CSVFileMapper csvFileMapper) {
     this.csvFileStorageService = csvFileStorageService;
     this.authenticationService = authenticationService;
     this.myFileRepository = myFileRepository;
+    this.csvFileMapper = csvFileMapper;
   }
 
   @Override
-  public void uploadFileCSV(MultipartFile csvFile) {
+  @Transactional
+  public CSVFileDto uploadFileCSV(MultipartFile csvFile) {
     byte[] bytes = parseMultipartFileToBytes(csvFile);
     String fileName = getFileName(csvFile);
     verifyIfFileHasAlreadyRegistered(fileName);
 
     User currentUser = authenticationService.getCurrentUser();
     String keyFile = csvFileStorageService.upload(bytes, fileName);
-    MyFile myFile = createFile(fileName, currentUser, keyFile);
+    MyFile CSVFile = createFile(fileName, currentUser, keyFile);
+    MyFile CSVFileSaved = myFileRepository.save(CSVFile);
 
-    myFileRepository.save(myFile);
+    return csvFileMapper.myFileToCSVFileDto(CSVFileSaved);
   }
 
   private void verifyIfFileHasAlreadyRegistered(String fileName) {

@@ -1,6 +1,8 @@
 package jvm.pablohdz.myfilesapi.service.implementations;
 
 import java.io.IOException;
+import java.util.Optional;
+import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
@@ -31,12 +33,18 @@ public class MyCSVService implements CSVService {
   public void uploadFileCSV(MultipartFile csvFile) {
     byte[] bytes = parseMultipartFileToBytes(csvFile);
     String fileName = getFileName(csvFile);
+    verifyIfFileHasAlreadyRegistered(fileName);
+
     User currentUser = authenticationService.getCurrentUser();
-    // TODO: 14/12/2021 before creating the file in S3 verify if it has already been registered
     String keyFile = csvFileStorageService.upload(bytes, fileName);
     MyFile myFile = createFile(fileName, currentUser, keyFile);
 
     myFileRepository.save(myFile);
+  }
+
+  private void verifyIfFileHasAlreadyRegistered(String fileName) {
+    Optional<MyFile> optionalMyFile = myFileRepository.findByName(fileName);
+    if (optionalMyFile.isPresent()) throw new CSVFileAlreadyRegisteredException(fileName);
   }
 
   private MyFile createFile(String fileName, User currentUser, String keyFile) {
@@ -48,10 +56,22 @@ public class MyCSVService implements CSVService {
     return myFile;
   }
 
+  /**
+   * Get the filename from the file
+   *
+   * @param csvFile file in format CSV
+   * @return the filename
+   */
   private String getFileName(MultipartFile csvFile) {
     return csvFile.getOriginalFilename();
   }
 
+  /**
+   * Parse file {@code MultipartFile} to bytes arrays
+   *
+   * @param csvFile the file to parsing
+   * @return array bytes with the data
+   */
   private byte[] parseMultipartFileToBytes(MultipartFile csvFile) {
     try {
       return csvFile.getBytes();

@@ -25,7 +25,7 @@ public class MyFile {
   @Column(name = "file_storage_id", nullable = false)
   private String storageId;
 
-  @Column(name = "file_name")
+  @Column(name = "file_name", unique = true)
   private String name;
 
   @Column(name = "file_version")

@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,6 +24,7 @@ class S3AWSCSVFileStorageServiceTest {
   }
 
   @Test
+  @Disabled
   void givenFile_whenUpload_thenCreateNewFile() throws IOException {
     // Arrange
     Path path = Path.of("src/main/resources/csv/test.csv");

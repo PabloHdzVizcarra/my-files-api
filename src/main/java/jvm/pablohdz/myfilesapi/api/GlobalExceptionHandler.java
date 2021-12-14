@@ -1,5 +1,6 @@
 package jvm.pablohdz.myfilesapi.api;
 
+import jvm.pablohdz.myfilesapi.dto.ErrorStandardResponse;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,20 +31,18 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(CSVFileAlreadyRegisteredException.class)
-  public ResponseEntity<ErrorResponse> handleCSVFileAlreadyRegisteredException(
+  public ResponseEntity<ErrorStandardResponse> handleCSVFileAlreadyRegisteredException(
       CSVFileAlreadyRegisteredException exception) {
     String errorMessage = exception.getMessage();
+    ErrorStandardResponse errorStandardResponse = new ErrorStandardResponse();
+    errorStandardResponse.setCode("file_already_registered");
+    errorStandardResponse.setType("entity_error");
+    errorStandardResponse.setMessage(
+        "you try save a file already been registered, you can change the file or change the name of the file");
     Map<String, List<String>> errors = new HashMap<>();
     errors.put("file", List.of(errorMessage));
-    errors.put("type", List.of("file_already_exists"));
+    errorStandardResponse.setParam(List.of(errors));
 
-    ErrorResponse errorResponse =
-        new ErrorResponse(
-            HttpStatus.CONFLICT.value(),
-            HttpStatus.CONFLICT,
-            "only can save a file with a different name please,  change the file or change the name of the file",
-            errors);
-
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(errorStandardResponse);
   }
 }

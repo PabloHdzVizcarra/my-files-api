@@ -45,7 +45,6 @@ class S3AWSCSVFileStorageServiceTest {
     // Act
     InputStreamResource file = csvFileStorageService.getFile(id);
     // Assert
-
     assertThat(file).isNotNull().isInstanceOf(InputStreamResource.class);
   }
 }

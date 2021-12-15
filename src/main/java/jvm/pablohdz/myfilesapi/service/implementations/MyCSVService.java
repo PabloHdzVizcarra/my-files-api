@@ -12,6 +12,7 @@ import jvm.pablohdz.myfilesapi.service.AuthenticationService;
 import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
 import jvm.pablohdz.myfilesapi.service.CSVService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,6 +49,17 @@ public class MyCSVService implements CSVService {
     MyFile CSVFileSaved = myFileRepository.save(CSVFile);
 
     return csvFileMapper.myFileToCSVFileDto(CSVFileSaved);
+  }
+
+  @Override
+  public InputStreamResource downloadById(String id) {
+    Optional<MyFile> optionalMyFile = myFileRepository.findById(id);
+    MyFile file =
+        optionalMyFile.orElseThrow(
+            () -> new IllegalStateException("error when get the file CSVFile from repository"));
+
+    String storageId = file.getStorageId();
+    return csvFileStorageService.getFile(storageId);
   }
 
   private void verifyIfFileHasAlreadyRegistered(String fileName) {

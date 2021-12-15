@@ -47,6 +47,10 @@ public class MyFile {
     this.id = "file_" + UUID.randomUUID();
   }
 
+  public MyFile(String storageId) {
+    this.storageId = storageId;
+  }
+
   @PrePersist
   protected void prePersist() {
     if (this.createdAt == null) createdAt = new Date().getTime();

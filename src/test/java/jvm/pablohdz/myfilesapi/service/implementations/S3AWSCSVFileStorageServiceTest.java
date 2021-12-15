@@ -1,5 +1,7 @@
 package jvm.pablohdz.myfilesapi.service.implementations;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +12,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -20,7 +23,7 @@ class S3AWSCSVFileStorageServiceTest {
   void setUp() {
     csvFileStorageService = new S3AWSCSVFileStorageService();
     ReflectionTestUtils.setField(csvFileStorageService, "bucketName", "my-files-storage");
-    ReflectionTestUtils.setField(csvFileStorageService, "prefixKey", "test/");
+    ReflectionTestUtils.setField(csvFileStorageService, "prefixKey", "file_csv/my.files/");
   }
 
   @Test
@@ -33,5 +36,16 @@ class S3AWSCSVFileStorageServiceTest {
     String keyObjectUploaded = csvFileStorageService.upload(fileBytes, "example");
     // Assert
     Assertions.assertThat(keyObjectUploaded).isInstanceOf(String.class);
+  }
+
+  @Test
+  @Disabled
+  void givenCorrectId_whenGetFile_thenReturnFoundFile() {
+    // Arrange
+    String id = "file_csv/my.files/file.csv_106ef207-6082-4663-995f-fdef4150cac4";
+    // Act
+    InputStreamResource file = csvFileStorageService.getFile(id);
+    // Assert
+    assertThat(file).isNotNull().isInstanceOf(InputStreamResource.class);
   }
 }

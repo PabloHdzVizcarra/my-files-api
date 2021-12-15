@@ -3,7 +3,9 @@ package jvm.pablohdz.myfilesapi.service.implementations;
 import java.io.IOException;
 import java.util.Optional;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
+import jvm.pablohdz.myfilesapi.entity.FileCSVData;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
+import jvm.pablohdz.myfilesapi.exception.FileCSVNotFoundException;
 import jvm.pablohdz.myfilesapi.mapper.CSVFileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
@@ -12,6 +14,7 @@ import jvm.pablohdz.myfilesapi.service.AuthenticationService;
 import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
 import jvm.pablohdz.myfilesapi.service.CSVService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,6 +51,16 @@ public class MyCSVService implements CSVService {
     MyFile CSVFileSaved = myFileRepository.save(CSVFile);
 
     return csvFileMapper.myFileToCSVFileDto(CSVFileSaved);
+  }
+
+  @Override
+  public FileCSVData downloadById(String id) {
+    Optional<MyFile> optionalMyFile = myFileRepository.findById(id);
+    MyFile file = optionalMyFile.orElseThrow(() -> new FileCSVNotFoundException(id));
+    String storageId = file.getStorageId();
+    String fileName = file.getName();
+    InputStreamResource data = csvFileStorageService.getFile(storageId);
+    return new FileCSVData(fileName, data);
   }
 
   private void verifyIfFileHasAlreadyRegistered(String fileName) {

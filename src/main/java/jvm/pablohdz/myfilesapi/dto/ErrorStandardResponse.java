@@ -1,9 +1,10 @@
 package jvm.pablohdz.myfilesapi.dto;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class ErrorStandardResponse {
   private String type;
@@ -13,15 +14,10 @@ public class ErrorStandardResponse {
   private String timestamp;
 
   public ErrorStandardResponse() {
-    this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss yyyy-MM-dd"));
-  }
-
-  public ErrorStandardResponse(
-      String type, String code, String message, List<Map<String, List<String>>> param) {
-    this.type = type;
-    this.code = code;
-    this.message = message;
-    this.param = param;
+    TimeZone timeZone = TimeZone.getDefault();
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+    dateFormat.setTimeZone(timeZone);
+    this.timestamp = dateFormat.format(new Date());
   }
 
   public String getType() {

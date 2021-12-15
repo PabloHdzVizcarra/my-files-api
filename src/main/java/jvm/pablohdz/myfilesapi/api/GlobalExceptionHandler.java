@@ -2,6 +2,7 @@ package jvm.pablohdz.myfilesapi.api;
 
 import jvm.pablohdz.myfilesapi.dto.ErrorStandardResponse;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
+import jvm.pablohdz.myfilesapi.exception.FileCSVNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -44,5 +45,20 @@ public class GlobalExceptionHandler {
     errorStandardResponse.setParam(List.of(errors));
 
     return ResponseEntity.status(HttpStatus.CONFLICT).body(errorStandardResponse);
+  }
+
+  @ExceptionHandler(FileCSVNotFoundException.class)
+  public ResponseEntity<ErrorStandardResponse> handleFileCSVNotFoundException(
+      FileCSVNotFoundException exception) {
+    String errorMessage = exception.getMessage();
+    ErrorStandardResponse errorStandardResponse = new ErrorStandardResponse();
+    errorStandardResponse.setCode("file_invalid_id");
+    errorStandardResponse.setType("invalid_request_error");
+    errorStandardResponse.setMessage("You are trying to find a file, with a file id invalid");
+    Map<String, List<String>> errors = new HashMap<>();
+    errors.put("file", List.of(errorMessage));
+    errorStandardResponse.setParam(List.of(errors));
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorStandardResponse);
   }
 }

@@ -39,6 +39,7 @@ class S3AWSCSVFileStorageServiceTest {
   }
 
   @Test
+  @Disabled
   void givenCorrectId_whenGetFile_thenReturnFoundFile() {
     // Arrange
     String id = "file_csv/my.files/file.csv_106ef207-6082-4663-995f-fdef4150cac4";

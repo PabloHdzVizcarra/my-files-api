@@ -1,11 +1,11 @@
 package jvm.pablohdz.myfilesapi.service;
 
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
-import org.springframework.core.io.InputStreamResource;
+import jvm.pablohdz.myfilesapi.entity.FileCSVData;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface CSVService {
   CSVFileDto uploadFileCSV(MultipartFile csvFile);
 
-  InputStreamResource downloadById(String s);
+  FileCSVData downloadById(String s);
 }

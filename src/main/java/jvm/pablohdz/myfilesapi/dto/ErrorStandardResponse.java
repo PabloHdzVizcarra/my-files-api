@@ -1,8 +1,6 @@
 package jvm.pablohdz.myfilesapi.dto;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -20,14 +18,6 @@ public class ErrorStandardResponse {
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
     dateFormat.setTimeZone(timeZone);
     this.timestamp = dateFormat.format(new Date());
-  }
-
-  public ErrorStandardResponse(
-      String type, String code, String message, List<Map<String, List<String>>> param) {
-    this.type = type;
-    this.code = code;
-    this.message = message;
-    this.param = param;
   }
 
   public String getType() {

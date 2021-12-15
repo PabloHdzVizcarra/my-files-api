@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.util.Optional;
+import jvm.pablohdz.myfilesapi.entity.FileCSVData;
 import jvm.pablohdz.myfilesapi.exception.FileCSVNotFoundException;
 import jvm.pablohdz.myfilesapi.mapper.CSVFileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
@@ -46,9 +47,9 @@ class MyCSVServiceTest {
     when(myFileRepository.findById(FILE_ID)).thenReturn(Optional.of(CSV_FILE));
     when(csvFileStorageService.getFile(STORAGE_ID)).thenReturn(FILE_INPUT_STREAM);
 
-    InputStreamResource fileCSV = csvService.downloadById(FILE_ID);
+    FileCSVData fileCSVData = csvService.downloadById(FILE_ID);
 
-    assertThat(fileCSV).isNotNull().isInstanceOf(InputStreamResource.class);
+    assertThat(fileCSVData).isNotNull().isInstanceOf(FileCSVData.class);
   }
 
   @Test

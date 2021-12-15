@@ -1,9 +1,11 @@
 package jvm.pablohdz.myfilesapi.service.implementations;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Optional;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
+import jvm.pablohdz.myfilesapi.exception.FileCSVNotFoundException;
 import jvm.pablohdz.myfilesapi.mapper.CSVFileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
@@ -54,10 +56,7 @@ public class MyCSVService implements CSVService {
   @Override
   public InputStreamResource downloadById(String id) {
     Optional<MyFile> optionalMyFile = myFileRepository.findById(id);
-    MyFile file =
-        optionalMyFile.orElseThrow(
-            () -> new IllegalStateException("error when get the file CSVFile from repository"));
-
+    MyFile file = optionalMyFile.orElseThrow(() -> new FileCSVNotFoundException(id));
     String storageId = file.getStorageId();
     return csvFileStorageService.getFile(storageId);
   }

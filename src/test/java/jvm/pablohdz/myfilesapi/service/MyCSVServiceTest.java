@@ -1,11 +1,14 @@
 package jvm.pablohdz.myfilesapi.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.BDDAssumptions.given;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.util.Optional;
+import jvm.pablohdz.myfilesapi.exception.FileCSVNotFoundException;
 import jvm.pablohdz.myfilesapi.mapper.CSVFileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
@@ -24,6 +27,7 @@ class MyCSVServiceTest {
   public static final MyFile CSV_FILE = new MyFile(STORAGE_ID);
   public static final InputStreamResource FILE_INPUT_STREAM =
       new InputStreamResource(new ByteArrayInputStream("data".getBytes()));
+  private static final String WRONG_FILE_ID = "invalid-id";
   private CSVService csvService;
   @Mock CSVFileStorageService csvFileStorageService;
   @Mock AuthenticationService authenticationService;
@@ -45,5 +49,14 @@ class MyCSVServiceTest {
     InputStreamResource fileCSV = csvService.downloadById(FILE_ID);
 
     assertThat(fileCSV).isNotNull().isInstanceOf(InputStreamResource.class);
+  }
+
+  @Test
+  void given_InvalidId_when_DownloadFile_thenThrownException() {
+    when(myFileRepository.findById(WRONG_FILE_ID)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> csvService.downloadById(WRONG_FILE_ID))
+        .hasMessageContaining(WRONG_FILE_ID)
+        .isInstanceOf(FileCSVNotFoundException.class);
   }
 }

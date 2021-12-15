@@ -3,8 +3,8 @@ package jvm.pablohdz.myfilesapi.entity;
 import org.springframework.core.io.InputStreamResource;
 
 public class FileCSVData {
-  private String fileName;
-  private InputStreamResource data;
+  private final String fileName;
+  private final InputStreamResource data;
 
   public FileCSVData(String fileName, InputStreamResource data) {
     this.fileName = fileName;

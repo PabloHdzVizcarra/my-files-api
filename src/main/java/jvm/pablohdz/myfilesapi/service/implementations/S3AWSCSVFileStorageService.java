@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
@@ -56,6 +57,22 @@ public class S3AWSCSVFileStorageService implements CSVFileStorageService {
     return null;
   }
 
+  @Override
+  public void update(String storageId, MultipartFile file) {
+    S3Client s3Client = createS3Client();
+    String keyFile = pathToFile();
+    String name = file.getName();
+    Map<String, String> metadata = new HashMap<>();
+    metadata.put("filename", name);
+    PutObjectRequest putObjectRequest =
+        PutObjectRequest.builder().bucket(bucketName).metadata(metadata).key(keyFile).build();
+    try {
+      s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
+    } catch (IOException e) {
+      throw new IllegalStateException(e.getMessage());
+    }
+  }
+
   private S3Client createS3Client() {
     Region region = Region.US_EAST_2;
     return S3Client.builder().region(region).build();
@@ -66,6 +83,6 @@ public class S3AWSCSVFileStorageService implements CSVFileStorageService {
   }
 
   private String generateUniqueKeyToFile() {
-    return "file.csv_" + UUID.randomUUID();
+    return "file_" + UUID.randomUUID();
   }
 }

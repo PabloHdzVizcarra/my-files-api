@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,5 +45,11 @@ public class FileResource {
     httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + csvFileName);
     httpHeaders.set(HttpHeaders.CONTENT_TYPE, "text/csv");
     return new ResponseEntity<>(data, httpHeaders, HttpStatus.OK);
+  }
+
+  @PutMapping(value = "/{id}", produces = "text/csv")
+  public ResponseEntity<String> update(
+      @PathVariable("id") String id, @RequestParam("file") MultipartFile file) {
+    return ResponseEntity.ok("text-example");
   }
 }

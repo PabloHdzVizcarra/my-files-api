@@ -55,12 +55,28 @@ public class MyCSVService implements CSVService {
 
   @Override
   public FileCSVData downloadById(String id) {
-    Optional<MyFile> optionalMyFile = myFileRepository.findById(id);
-    MyFile file = optionalMyFile.orElseThrow(() -> new FileCSVNotFoundException(id));
+    MyFile file = getFileFromRepository(id);
     String storageId = file.getStorageId();
     String fileName = file.getName();
     InputStreamResource data = csvFileStorageService.getFile(storageId);
     return new FileCSVData(fileName, data);
+  }
+
+  private MyFile getFileFromRepository(String id) {
+    Optional<MyFile> optionalMyFile = myFileRepository.findById(id);
+    return optionalMyFile.orElseThrow(() -> new FileCSVNotFoundException(id));
+  }
+
+  @Override
+  @Transactional
+  public FileCSVData update(String id, MultipartFile file) {
+    MyFile foundFile = getFileFromRepository(id);
+    String storageId = foundFile.getStorageId();
+    String currentFileName = getFileName(file);
+    InputStreamResource fileUpdated = csvFileStorageService.update(storageId, file);
+    foundFile.setName(currentFileName);
+    myFileRepository.save(foundFile);
+    return new FileCSVData(currentFileName, fileUpdated);
   }
 
   private void verifyIfFileHasAlreadyRegistered(String fileName) {

@@ -8,4 +8,6 @@ public interface CSVService {
   CSVFileDto uploadFileCSV(MultipartFile csvFile);
 
   FileCSVData downloadById(String s);
+
+  FileCSVData update(String id, MultipartFile file);
 }

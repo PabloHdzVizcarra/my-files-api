@@ -1,10 +1,12 @@
 package jvm.pablohdz.myfilesapi.api;
 
+import java.io.IOException;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.entity.FileCSVData;
 import jvm.pablohdz.myfilesapi.service.CSVService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,7 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,8 +39,8 @@ public class FileResource {
   @GetMapping(value = "/{id}", produces = "text/csv")
   public ResponseEntity<InputStreamResource> readByID(@PathVariable("id") String id) {
     FileCSVData fileCSVData = csvService.downloadById(id);
-    String csvFileName = fileCSVData.getFileName();
-    InputStreamResource data = fileCSVData.getData();
+    String csvFileName = fileCSVData.getFilename();
+    InputStreamResource data = fileCSVData.getDataStreamResource();
 
     HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + csvFileName);
@@ -48,8 +49,13 @@ public class FileResource {
   }
 
   @PutMapping(value = "/{id}", produces = "text/csv")
-  public ResponseEntity<String> update(
-      @PathVariable("id") String id, @RequestParam("file") MultipartFile file) {
-    return ResponseEntity.ok("text-example");
+  public ResponseEntity<byte[]> update(
+      @PathVariable("id") String id, @RequestParam("file") MultipartFile file) throws IOException {
+    FileCSVData data = csvService.update(id, file);
+    HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + data.getFilename());
+    httpHeaders.set(HttpHeaders.CONTENT_TYPE, data.getContentType());
+
+    return new ResponseEntity<>(data.getBytes(), httpHeaders, HttpStatus.ACCEPTED);
   }
 }

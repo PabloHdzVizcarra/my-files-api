@@ -1,21 +1,68 @@
 package jvm.pablohdz.myfilesapi.entity;
 
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.web.multipart.MultipartFile;
 
 public class FileCSVData {
-  private final String fileName;
-  private final InputStreamResource data;
+  private String filename;
+  private MultipartFile data;
+  private InputStreamResource dataStreamResource;
+  private byte[] bytes;
+  private String contentType;
 
-  public FileCSVData(String fileName, InputStreamResource data) {
-    this.fileName = fileName;
+  public FileCSVData(String filename, byte[] bytes, String contentType) {
+    this.filename = filename;
+    this.bytes = bytes;
+    this.contentType = contentType;
+  }
+
+  public FileCSVData(String filename, MultipartFile data) {
+    this.filename = filename;
     this.data = data;
   }
 
-  public String getFileName() {
-    return fileName;
+  public FileCSVData(String filename, InputStreamResource dataStreamResource) {
+    this.filename = filename;
+    this.dataStreamResource = dataStreamResource;
   }
 
-  public InputStreamResource getData() {
+  public String getFilename() {
+    return filename;
+  }
+
+  public void setFilename(String filename) {
+    this.filename = filename;
+  }
+
+  public MultipartFile getData() {
     return data;
+  }
+
+  public void setData(MultipartFile data) {
+    this.data = data;
+  }
+
+  public InputStreamResource getDataStreamResource() {
+    return dataStreamResource;
+  }
+
+  public void setDataStreamResource(InputStreamResource dataStreamResource) {
+    this.dataStreamResource = dataStreamResource;
+  }
+
+  public byte[] getBytes() {
+    return bytes;
+  }
+
+  public void setBytes(byte[] bytes) {
+    this.bytes = bytes;
+  }
+
+  public String getContentType() {
+    return contentType;
+  }
+
+  public void setContentType(String contentType) {
+    this.contentType = contentType;
   }
 }

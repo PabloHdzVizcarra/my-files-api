@@ -7,12 +7,14 @@ import io.jsonwebtoken.Claims;
 import java.util.Objects;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
+@Disabled("Because use a file from the local server")
 class IoJjwtJwtProviderTest {
   private JwtProvider jwtProvider;
   @Mock private PasswordStorageToken passwordStorageToken;

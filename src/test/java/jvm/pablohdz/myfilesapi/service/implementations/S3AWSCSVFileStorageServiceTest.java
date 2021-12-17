@@ -33,7 +33,7 @@ class S3AWSCSVFileStorageServiceTest {
     Path path = Path.of("src/main/resources/csv/test.csv");
     byte[] fileBytes = Files.readAllBytes(path);
     // Act
-    String keyObjectUploaded = csvFileStorageService.upload(fileBytes, "example");
+    String keyObjectUploaded = csvFileStorageService.upload(fileBytes, "example", "john");
     // Assert
     Assertions.assertThat(keyObjectUploaded).isInstanceOf(String.class);
   }

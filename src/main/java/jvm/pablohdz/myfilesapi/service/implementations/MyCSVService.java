@@ -2,6 +2,7 @@ package jvm.pablohdz.myfilesapi.service.implementations;
 
 import java.io.IOException;
 import java.util.Optional;
+import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.entity.FileCSVData;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
@@ -46,7 +47,7 @@ public class MyCSVService implements CSVService {
     verifyIfFileHasAlreadyRegistered(fileName);
 
     User currentUser = authenticationService.getCurrentUser();
-    String keyFile = csvFileStorageService.upload(bytes, fileName);
+    String keyFile = csvFileStorageService.upload(bytes, fileName, currentUser.getUsername());
     MyFile CSVFile = createFile(fileName, currentUser, keyFile);
     MyFile CSVFileSaved = myFileRepository.save(CSVFile);
 
@@ -55,12 +56,38 @@ public class MyCSVService implements CSVService {
 
   @Override
   public FileCSVData downloadById(String id) {
-    Optional<MyFile> optionalMyFile = myFileRepository.findById(id);
-    MyFile file = optionalMyFile.orElseThrow(() -> new FileCSVNotFoundException(id));
+    MyFile file = getFileFromRepository(id);
     String storageId = file.getStorageId();
     String fileName = file.getName();
     InputStreamResource data = csvFileStorageService.getFile(storageId);
     return new FileCSVData(fileName, data);
+  }
+
+  private MyFile getFileFromRepository(String id) {
+    Optional<MyFile> optionalMyFile = myFileRepository.findById(id);
+    return optionalMyFile.orElseThrow(() -> new FileCSVNotFoundException(id));
+  }
+
+  @Override
+  @Transactional
+  public CSVFileDataDto update(String id, MultipartFile file) {
+    byte[] bytesFromMultipartFile = getBytesFromMultipartFile(file);
+    String contentType = file.getContentType();
+    String originalFilename = file.getOriginalFilename();
+    MyFile foundFile = getFileFromRepository(id);
+    String storageId = foundFile.getStorageId();
+    csvFileStorageService.update(storageId, bytesFromMultipartFile, originalFilename);
+    foundFile.setName(originalFilename);
+    myFileRepository.save(foundFile);
+    return csvFileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
+  }
+
+  private byte[] getBytesFromMultipartFile(MultipartFile file) {
+    try {
+      return file.getBytes();
+    } catch (IOException e) {
+      throw new IllegalStateException(e.getMessage());
+    }
   }
 
   private void verifyIfFileHasAlreadyRegistered(String fileName) {

@@ -20,6 +20,9 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service
 public class S3AWSCSVFileStorageService implements CSVFileStorageService {
+
+  public static final String FILENAME = "filename";
+
   @Value("${aws.bucket.name}")
   private String bucketName;
 
@@ -27,11 +30,11 @@ public class S3AWSCSVFileStorageService implements CSVFileStorageService {
   private String prefixKey;
 
   @Override
-  public String upload(byte[] fileBytes, String fileName) {
+  public String upload(byte[] fileBytes, String filename, String username) {
     S3Client s3Client = createS3Client();
-    String keyToFile = pathToFile();
+    String keyToFile = pathToFile(username);
     Map<String, String> metadata = new HashMap<>();
-    metadata.put("file.name", fileName);
+    metadata.put(FILENAME, filename);
     PutObjectRequest putObjectRequest =
         PutObjectRequest.builder().bucket(bucketName).metadata(metadata).key(keyToFile).build();
     s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileBytes));
@@ -56,16 +59,26 @@ public class S3AWSCSVFileStorageService implements CSVFileStorageService {
     return null;
   }
 
+  @Override
+  public void update(String storageId, byte[] bytes, String filename) {
+    S3Client s3Client = createS3Client();
+    Map<String, String> metadata = new HashMap<>();
+    metadata.put(FILENAME, filename);
+    PutObjectRequest putObjectRequest =
+        PutObjectRequest.builder().bucket(bucketName).metadata(metadata).key(storageId).build();
+    s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
+  }
+
   private S3Client createS3Client() {
     Region region = Region.US_EAST_2;
     return S3Client.builder().region(region).build();
   }
 
-  private String pathToFile() {
-    return prefixKey + generateUniqueKeyToFile();
+  private String pathToFile(String username) {
+    return prefixKey + generateUniqueKeyToFile(username);
   }
 
-  private String generateUniqueKeyToFile() {
-    return "file.csv_" + UUID.randomUUID();
+  private String generateUniqueKeyToFile(String username) {
+    return "file.csv_" + username + "_" + UUID.randomUUID();
   }
 }

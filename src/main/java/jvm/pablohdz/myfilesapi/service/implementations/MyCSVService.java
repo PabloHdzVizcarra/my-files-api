@@ -46,7 +46,7 @@ public class MyCSVService implements CSVService {
     verifyIfFileHasAlreadyRegistered(fileName);
 
     User currentUser = authenticationService.getCurrentUser();
-    String keyFile = csvFileStorageService.upload(bytes, fileName);
+    String keyFile = csvFileStorageService.upload(bytes, fileName, currentUser.getUsername());
     MyFile CSVFile = createFile(fileName, currentUser, keyFile);
     MyFile CSVFileSaved = myFileRepository.save(CSVFile);
 
@@ -70,13 +70,29 @@ public class MyCSVService implements CSVService {
   @Override
   @Transactional
   public FileCSVData update(String id, MultipartFile file) {
+    // TODO: 16/12/2021 get bytes from the file
+    byte[] bytesFromMultipartFile = getBytesFromMultipartFile(file);
+    String contentType = file.getContentType();
+    String originalFilename = file.getOriginalFilename();
+    // TODO: 16/12/2021 verify if the id param, is set to an entity - return entity
     MyFile foundFile = getFileFromRepository(id);
     String storageId = foundFile.getStorageId();
-    String currentFileName = getFileName(file);
-    InputStreamResource fileUpdated = csvFileStorageService.update(storageId, file);
-    foundFile.setName(currentFileName);
+    String username = foundFile.getUser().getUsername();
+    // TODO: 16/12/2021 update the file from S3 bucket using the id file provided from entity
+    csvFileStorageService.update(storageId, bytesFromMultipartFile, originalFilename);
+    // TODO: 16/12/2021 update the founded entity
+    // TODO: 16/12/2021 create a object return with info from the file update
+    foundFile.setName(originalFilename);
     myFileRepository.save(foundFile);
-    return new FileCSVData(currentFileName, fileUpdated);
+    return new FileCSVData(originalFilename, file);
+  }
+
+  private byte[] getBytesFromMultipartFile(MultipartFile file) {
+    try {
+      return file.getBytes();
+    } catch (IOException e) {
+      throw new IllegalStateException(e.getMessage());
+    }
   }
 
   private void verifyIfFileHasAlreadyRegistered(String fileName) {

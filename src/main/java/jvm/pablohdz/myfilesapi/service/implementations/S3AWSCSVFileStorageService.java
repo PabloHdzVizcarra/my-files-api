@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
@@ -21,6 +20,9 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service
 public class S3AWSCSVFileStorageService implements CSVFileStorageService {
+
+  public static final String FILENAME = "filename";
+
   @Value("${aws.bucket.name}")
   private String bucketName;
 
@@ -28,11 +30,11 @@ public class S3AWSCSVFileStorageService implements CSVFileStorageService {
   private String prefixKey;
 
   @Override
-  public String upload(byte[] fileBytes, String fileName) {
+  public String upload(byte[] fileBytes, String filename, String username) {
     S3Client s3Client = createS3Client();
-    String keyToFile = pathToFile();
+    String keyToFile = pathToFile(username);
     Map<String, String> metadata = new HashMap<>();
-    metadata.put("file.name", fileName);
+    metadata.put(FILENAME, filename);
     PutObjectRequest putObjectRequest =
         PutObjectRequest.builder().bucket(bucketName).metadata(metadata).key(keyToFile).build();
     s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileBytes));
@@ -58,19 +60,13 @@ public class S3AWSCSVFileStorageService implements CSVFileStorageService {
   }
 
   @Override
-  public void update(String storageId, MultipartFile file) {
+  public void update(String storageId, byte[] bytes, String filename) {
     S3Client s3Client = createS3Client();
-    String keyFile = pathToFile();
-    String name = file.getName();
     Map<String, String> metadata = new HashMap<>();
-    metadata.put("filename", name);
+    metadata.put(FILENAME, filename);
     PutObjectRequest putObjectRequest =
-        PutObjectRequest.builder().bucket(bucketName).metadata(metadata).key(keyFile).build();
-    try {
-      s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
-    } catch (IOException e) {
-      throw new IllegalStateException(e.getMessage());
-    }
+        PutObjectRequest.builder().bucket(bucketName).metadata(metadata).key(storageId).build();
+    s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
   }
 
   private S3Client createS3Client() {
@@ -78,11 +74,11 @@ public class S3AWSCSVFileStorageService implements CSVFileStorageService {
     return S3Client.builder().region(region).build();
   }
 
-  private String pathToFile() {
-    return prefixKey + generateUniqueKeyToFile();
+  private String pathToFile(String username) {
+    return prefixKey + generateUniqueKeyToFile(username);
   }
 
-  private String generateUniqueKeyToFile() {
-    return "file_" + UUID.randomUUID();
+  private String generateUniqueKeyToFile(String username) {
+    return "file.csv_" + username + "_" + UUID.randomUUID();
   }
 }

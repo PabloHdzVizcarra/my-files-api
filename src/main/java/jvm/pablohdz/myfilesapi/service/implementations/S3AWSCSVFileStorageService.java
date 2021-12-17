@@ -2,21 +2,29 @@ package jvm.pablohdz.myfilesapi.service.implementations;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 @Service
 public class S3AWSCSVFileStorageService implements CSVFileStorageService {
@@ -67,6 +75,21 @@ public class S3AWSCSVFileStorageService implements CSVFileStorageService {
     PutObjectRequest putObjectRequest =
         PutObjectRequest.builder().bucket(bucketName).metadata(metadata).key(storageId).build();
     s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
+  }
+
+  @Override
+  public List<String> findAllByPrefix(String username) {
+    String defaultPrefix = "my.files/file.csv_" + username + "_";
+    try (S3Client s3Client = createS3Client()) {
+      ListObjectsRequest listObjectsRequest =
+          ListObjectsRequest.builder().bucket(bucketName).prefix(defaultPrefix).build();
+      ListObjectsResponse response = s3Client.listObjects(listObjectsRequest);
+      List<S3Object> objects = response.contents();
+      return objects.stream().map(S3Object::key).collect(Collectors.toUnmodifiableList());
+
+    } catch (SdkException exception) {
+      throw new IllegalStateException(exception.getMessage());
+    }
   }
 
   private S3Client createS3Client() {

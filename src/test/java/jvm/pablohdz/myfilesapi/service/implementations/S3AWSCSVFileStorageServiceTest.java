@@ -5,8 +5,11 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
 import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -23,7 +26,7 @@ class S3AWSCSVFileStorageServiceTest {
   void setUp() {
     csvFileStorageService = new S3AWSCSVFileStorageService();
     ReflectionTestUtils.setField(csvFileStorageService, "bucketName", "my-files-storage");
-    ReflectionTestUtils.setField(csvFileStorageService, "prefixKey", "file_csv/my.files/");
+    ReflectionTestUtils.setField(csvFileStorageService, "prefixKey", "my.files/");
   }
 
   @Test
@@ -47,5 +50,16 @@ class S3AWSCSVFileStorageServiceTest {
     InputStreamResource file = csvFileStorageService.getFile(id);
     // Assert
     assertThat(file).isNotNull().isInstanceOf(InputStreamResource.class);
+  }
+
+  @Test
+  void getListOfObjectByPrefix() {
+    List<String> list = csvFileStorageService.findAllByPrefix("james.java01");
+
+    assertThat(list)
+        .asList()
+        .isNotEmpty()
+        .hasSize(2)
+        .isInstanceOf(Collection.class);
   }
 }

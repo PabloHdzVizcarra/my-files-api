@@ -19,6 +19,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
+@Disabled("Only run in host development")
 class S3AWSCSVFileStorageServiceTest {
   private CSVFileStorageService csvFileStorageService;
 
@@ -30,7 +31,6 @@ class S3AWSCSVFileStorageServiceTest {
   }
 
   @Test
-  @Disabled
   void givenFile_whenUpload_thenCreateNewFile() throws IOException {
     // Arrange
     Path path = Path.of("src/main/resources/csv/test.csv");
@@ -42,7 +42,6 @@ class S3AWSCSVFileStorageServiceTest {
   }
 
   @Test
-  @Disabled
   void givenCorrectId_whenGetFile_thenReturnFoundFile() {
     // Arrange
     String id = "file_csv/my.files/file.csv_106ef207-6082-4663-995f-fdef4150cac4";
@@ -56,10 +55,6 @@ class S3AWSCSVFileStorageServiceTest {
   void getListOfObjectByPrefix() {
     List<String> list = csvFileStorageService.findAllByPrefix("james.java01");
 
-    assertThat(list)
-        .asList()
-        .isNotEmpty()
-        .hasSize(2)
-        .isInstanceOf(Collection.class);
+    assertThat(list).asList().isNotEmpty().hasSize(3).isInstanceOf(Collection.class);
   }
 }

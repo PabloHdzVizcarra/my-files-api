@@ -2,8 +2,6 @@ package jvm.pablohdz.myfilesapi.service.implementations;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +28,7 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 public class S3AWSCSVFileStorageService implements CSVFileStorageService {
 
   public static final String FILENAME = "filename";
+  public static final String PRE_KEY_ID = "file_";
 
   @Value("${aws.bucket.name}")
   private String bucketName;
@@ -79,10 +78,11 @@ public class S3AWSCSVFileStorageService implements CSVFileStorageService {
 
   @Override
   public List<String> findAllByPrefix(String username) {
-    String defaultPrefix = "my.files/file.csv_" + username + "_";
+    String findPrefix = createFindPrefix(username);
+
     try (S3Client s3Client = createS3Client()) {
       ListObjectsRequest listObjectsRequest =
-          ListObjectsRequest.builder().bucket(bucketName).prefix(defaultPrefix).build();
+          ListObjectsRequest.builder().bucket(bucketName).prefix(findPrefix).build();
       ListObjectsResponse response = s3Client.listObjects(listObjectsRequest);
       List<S3Object> objects = response.contents();
       return objects.stream().map(S3Object::key).collect(Collectors.toUnmodifiableList());
@@ -92,16 +92,20 @@ public class S3AWSCSVFileStorageService implements CSVFileStorageService {
     }
   }
 
+  private String createFindPrefix(String username) {
+    return prefixKey + username + "/" + PRE_KEY_ID;
+  }
+
   private S3Client createS3Client() {
     Region region = Region.US_EAST_2;
     return S3Client.builder().region(region).build();
   }
 
   private String pathToFile(String username) {
-    return prefixKey + generateUniqueKeyToFile(username);
+    return prefixKey + username + "/" + generateUniqueKeyToFile();
   }
 
-  private String generateUniqueKeyToFile(String username) {
-    return "file.csv_" + username + "_" + UUID.randomUUID();
+  private String generateUniqueKeyToFile() {
+    return PRE_KEY_ID + UUID.randomUUID();
   }
 }

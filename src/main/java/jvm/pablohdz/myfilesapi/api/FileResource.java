@@ -1,6 +1,7 @@
 package jvm.pablohdz.myfilesapi.api;
 
 import java.io.IOException;
+import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.entity.FileCSVData;
 import jvm.pablohdz.myfilesapi.service.CSVService;
@@ -51,11 +52,11 @@ public class FileResource {
   @PutMapping(value = "/{id}", produces = "text/csv")
   public ResponseEntity<byte[]> update(
       @PathVariable("id") String id, @RequestParam("file") MultipartFile file) throws IOException {
-    FileCSVData data = csvService.update(id, file);
+    CSVFileDataDto data = csvService.update(id, file);
     HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + data.getFilename());
     httpHeaders.set(HttpHeaders.CONTENT_TYPE, data.getContentType());
 
-    return new ResponseEntity<>(data.getBytes(), httpHeaders, HttpStatus.ACCEPTED);
+    return new ResponseEntity<>(data.getData(), httpHeaders, HttpStatus.ACCEPTED);
   }
 }

@@ -2,6 +2,7 @@ package jvm.pablohdz.myfilesapi.service.implementations;
 
 import java.io.IOException;
 import java.util.Optional;
+import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.entity.FileCSVData;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
@@ -69,7 +70,7 @@ public class MyCSVService implements CSVService {
 
   @Override
   @Transactional
-  public FileCSVData update(String id, MultipartFile file) {
+  public CSVFileDataDto update(String id, MultipartFile file) {
     byte[] bytesFromMultipartFile = getBytesFromMultipartFile(file);
     String contentType = file.getContentType();
     String originalFilename = file.getOriginalFilename();
@@ -78,7 +79,7 @@ public class MyCSVService implements CSVService {
     csvFileStorageService.update(storageId, bytesFromMultipartFile, originalFilename);
     foundFile.setName(originalFilename);
     myFileRepository.save(foundFile);
-    return new FileCSVData(originalFilename, bytesFromMultipartFile, contentType);
+    return csvFileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
   }
 
   private byte[] getBytesFromMultipartFile(MultipartFile file) {

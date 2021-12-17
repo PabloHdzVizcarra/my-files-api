@@ -3,6 +3,7 @@ package jvm.pablohdz.myfilesapi.mapper;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import org.mapstruct.Mapper;
@@ -13,6 +14,11 @@ public interface CSVFileMapper {
 
   @Mapping(target = "createdAt", expression = "java(dateISOFormat(file.getCreatedAt()))")
   CSVFileDto myFileToCSVFileDto(MyFile file);
+
+  @Mapping(target = "filename", source = "filename")
+  @Mapping(target = "contentType", source = "contentType")
+  @Mapping(target = "data", source = "bytes")
+  CSVFileDataDto toCSVFileDataDto(String filename, String contentType, byte[] bytes);
 
   default String dateISOFormat(Long date) {
     TimeZone timeZone = TimeZone.getDefault();

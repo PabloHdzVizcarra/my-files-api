@@ -1,7 +1,10 @@
 package jvm.pablohdz.myfilesapi.service.implementations;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.entity.FileCSVData;
@@ -80,6 +83,17 @@ public class MyCSVService implements CSVService {
     foundFile.setName(originalFilename);
     myFileRepository.save(foundFile);
     return csvFileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Collection<CSVFileDto> getAllFilesByUserId(String userId) {
+    User user = authenticationService.getCurrentUser();
+    Collection<MyFile> allFilesByUser = myFileRepository.findAllByUser(user);
+
+    return allFilesByUser.stream()
+        .map(csvFileMapper::toCSVFileDto)
+        .collect(Collectors.toUnmodifiableList());
   }
 
   private byte[] getBytesFromMultipartFile(MultipartFile file) {

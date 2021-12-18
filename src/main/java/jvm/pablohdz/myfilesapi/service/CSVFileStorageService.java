@@ -1,5 +1,6 @@
 package jvm.pablohdz.myfilesapi.service;
 
+import java.util.List;
 import org.springframework.core.io.InputStreamResource;
 
 public interface CSVFileStorageService {
@@ -8,4 +9,6 @@ public interface CSVFileStorageService {
   InputStreamResource getFile(String storageId);
 
   void update(String storageId, byte[] bytes, String filename);
+
+  List<String> findAllByPrefix(String username);
 }

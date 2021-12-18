@@ -15,6 +15,10 @@ public interface CSVFileMapper {
   @Mapping(target = "createdAt", expression = "java(dateISOFormat(file.getCreatedAt()))")
   CSVFileDto myFileToCSVFileDto(MyFile file);
 
+  @Mapping(target = "createdAt", expression = "java(dateISOFormat(file.getCreatedAt()))")
+  @Mapping(target = "updateAt", expression = "java(dateISOFormat(file.getUpdateAt()))")
+  CSVFileDto toCSVFileDto(MyFile file);
+
   @Mapping(target = "filename", source = "filename")
   @Mapping(target = "contentType", source = "contentType")
   @Mapping(target = "data", source = "bytes")

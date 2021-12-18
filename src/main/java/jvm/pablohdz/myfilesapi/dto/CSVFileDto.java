@@ -6,6 +6,7 @@ public class CSVFileDto {
   private Double version;
   private String createdAt;
   private String updateAt;
+  private String storageId;
 
   public CSVFileDto() {}
 
@@ -47,5 +48,13 @@ public class CSVFileDto {
 
   public void setUpdateAt(String updateAt) {
     this.updateAt = updateAt;
+  }
+
+  public String getStorageId() {
+    return storageId;
+  }
+
+  public void setStorageId(String storageId) {
+    this.storageId = storageId;
   }
 }

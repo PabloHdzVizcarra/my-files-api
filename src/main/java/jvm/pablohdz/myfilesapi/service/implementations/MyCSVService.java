@@ -1,7 +1,9 @@
 package jvm.pablohdz.myfilesapi.service.implementations;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.entity.FileCSVData;
@@ -41,9 +43,9 @@ public class MyCSVService implements CSVService {
 
   @Override
   @Transactional
-  public CSVFileDto uploadFileCSV(MultipartFile csvFile) {
-    byte[] bytes = parseMultipartFileToBytes(csvFile);
-    String fileName = getFileName(csvFile);
+  public CSVFileDto uploadFileCSV(MultipartFile file) {
+    byte[] bytes = parseMultipartFileToBytes(file);
+    String fileName = getFileName(file);
     verifyIfFileHasAlreadyRegistered(fileName);
 
     User currentUser = authenticationService.getCurrentUser();
@@ -90,9 +92,9 @@ public class MyCSVService implements CSVService {
     }
   }
 
-  private void verifyIfFileHasAlreadyRegistered(String fileName) {
-    Optional<MyFile> optionalMyFile = myFileRepository.findByName(fileName);
-    if (optionalMyFile.isPresent()) throw new CSVFileAlreadyRegisteredException(fileName);
+  private void verifyIfFileHasAlreadyRegistered(String filename) {
+    Optional<MyFile> optionalMyFile = myFileRepository.findByName(filename);
+    if (optionalMyFile.isPresent()) throw new CSVFileAlreadyRegisteredException(filename);
   }
 
   private MyFile createFile(String fileName, User currentUser, String keyFile) {
@@ -107,24 +109,35 @@ public class MyCSVService implements CSVService {
   /**
    * Get the filename from the file
    *
-   * @param csvFile file in format CSV
+   * @param file file in format CSV
    * @return the filename
    */
-  private String getFileName(MultipartFile csvFile) {
-    return csvFile.getOriginalFilename();
+  private String getFileName(MultipartFile file) {
+    return file.getOriginalFilename();
   }
 
   /**
    * Parse file {@code MultipartFile} to bytes arrays
    *
-   * @param csvFile the file to parsing
+   * @param file the file to parsing
    * @return array bytes with the data
    */
-  private byte[] parseMultipartFileToBytes(MultipartFile csvFile) {
+  private byte[] parseMultipartFileToBytes(MultipartFile file) {
     try {
-      return csvFile.getBytes();
+      return file.getBytes();
     } catch (IOException e) {
       throw new RuntimeException(e.getMessage());
     }
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Collection<CSVFileDto> getAllFilesByUserId(String userId) {
+    User user = authenticationService.getCurrentUser();
+    Collection<MyFile> allFilesByUser = myFileRepository.findAllByUser(user);
+
+    return allFilesByUser.stream()
+        .map(csvFileMapper::toCSVFileDto)
+        .collect(Collectors.toUnmodifiableList());
   }
 }

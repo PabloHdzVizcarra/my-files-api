@@ -5,7 +5,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -23,11 +22,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.InputStreamSource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class MyCSVServiceTest {
@@ -37,9 +31,6 @@ class MyCSVServiceTest {
   public static final InputStreamResource FILE_INPUT_STREAM =
       new InputStreamResource(new ByteArrayInputStream("data".getBytes()));
   private static final String WRONG_FILE_ID = "invalid-id";
-  private static final MultipartFile FILE_REQUEST =
-      new MockMultipartFile(
-          "example", "example.csv", MediaType.MULTIPART_FORM_DATA_VALUE, "example data".getBytes());
   public static final String USER_ID = "us_xxx";
   public static final String USERNAME = "john@terminator";
   public static final User USER = new User(USERNAME);

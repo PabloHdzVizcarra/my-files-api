@@ -26,7 +26,6 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 
 @Service
 public class S3AWSCSVFileStorageService implements CSVFileStorageService {
-
   public static final String FILENAME = "filename";
   public static final String PRE_KEY_ID = "file_";
 

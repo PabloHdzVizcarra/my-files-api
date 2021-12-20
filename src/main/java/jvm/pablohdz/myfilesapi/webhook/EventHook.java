@@ -11,7 +11,6 @@ public class EventHook {
   private String eventType;
   private String name;
   private String dateAdded;
-  private int size;
   private String uri;
   private Collection<String> notes;
 
@@ -60,14 +59,6 @@ public class EventHook {
 
   public void setDateAdded(String dateAdded) {
     this.dateAdded = dateAdded;
-  }
-
-  public int getSize() {
-    return size;
-  }
-
-  public void setSize(int size) {
-    this.size = size;
   }
 
   public String getUri() {

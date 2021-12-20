@@ -7,7 +7,7 @@ import java.net.UnknownHostException;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.entity.FileCSVData;
-import jvm.pablohdz.myfilesapi.service.CSVService;
+import jvm.pablohdz.myfilesapi.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.InputStreamResource;
@@ -29,11 +29,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RestController
 @RequestMapping(value = "/api/files")
 public class FileResource {
-  private final CSVService csvService;
+  private final FileService csvService;
   private final Environment environment;
 
   @Autowired
-  public FileResource(CSVService csvService, Environment environment) {
+  public FileResource(FileService csvService, Environment environment) {
     this.csvService = csvService;
     this.environment = environment;
   }

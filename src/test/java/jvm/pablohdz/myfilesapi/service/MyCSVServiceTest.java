@@ -2,10 +2,11 @@ package jvm.pablohdz.myfilesapi.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -16,13 +17,13 @@ import jvm.pablohdz.myfilesapi.mapper.CSVFileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
-import jvm.pablohdz.myfilesapi.service.implementations.MyCSVService;
-import jvm.pablohdz.myfilesapi.webhook.EventHook;
+import jvm.pablohdz.myfilesapi.service.implementations.CSVFileService;
 import jvm.pablohdz.myfilesapi.webhook.WebHook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.mock.web.MockMultipartFile;
@@ -40,9 +41,11 @@ class MyCSVServiceTest {
   public static final User USER = new User(USERNAME);
   public static final MyFile FILE_EMPTY = new MyFile();
   public static final CSVFileDto FILE_DTO = new CSVFileDto();
-  public static final MockMultipartFile MOCK_MULTIPART_FILE = new MockMultipartFile("test.csv",
-      "some content".getBytes());
-  private CSVService csvService;
+  public static final String FILENAME = "example.csv";
+  public static final MockMultipartFile MOCK_MULTIPART_FILE =
+      new MockMultipartFile("test.csv", FILENAME, "csv", "example content".getBytes());
+  public static final MyFile FILE_ID_NAME = new MyFile("file_ad879d", "example.csv");
+  private FileService csvService;
   @Mock CSVFileStorageService csvFileStorageService;
   @Mock AuthenticationService authenticationService;
   @Mock MyFileRepository myFileRepository;
@@ -52,7 +55,7 @@ class MyCSVServiceTest {
   @BeforeEach
   void setUp() {
     csvService =
-        new MyCSVService(
+        new CSVFileService(
             csvFileStorageService, authenticationService, myFileRepository, csvFileMapper, webHook);
   }
 
@@ -84,5 +87,19 @@ class MyCSVServiceTest {
     Collection<CSVFileDto> collection = csvService.getAllFilesByUserId(USER_ID);
 
     assertThat(collection).asList().isNotEmpty().hasSize(2);
+  }
+
+  @Test
+  void whenUploadFile_thenSendEvent() {
+    when(myFileRepository.findByName(FILENAME)).thenReturn(Optional.empty());
+    when(authenticationService.getCurrentUser()).thenReturn(USER);
+    when(myFileRepository.save(any())).thenReturn(FILE_ID_NAME);
+    String id = FILE_ID_NAME.getId();
+    String filename = MOCK_MULTIPART_FILE.getOriginalFilename();
+    String uri = "http://localhost:8080/api/files/" + id;
+
+    csvService.uploadFile(MOCK_MULTIPART_FILE);
+
+    Mockito.verify(webHook, times(1)).createEvent("added", id, filename, List.of(), uri);
   }
 }

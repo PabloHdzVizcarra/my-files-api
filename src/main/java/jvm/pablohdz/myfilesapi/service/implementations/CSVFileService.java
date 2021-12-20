@@ -16,7 +16,7 @@ import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
 import jvm.pablohdz.myfilesapi.service.AuthenticationService;
 import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
-import jvm.pablohdz.myfilesapi.service.CSVService;
+import jvm.pablohdz.myfilesapi.service.FileService;
 import jvm.pablohdz.myfilesapi.webhook.WebHook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class MyCSVService implements CSVService {
+public class CSVFileService implements FileService {
   private final CSVFileStorageService csvFileStorageService;
   private final AuthenticationService authenticationService;
   private final MyFileRepository myFileRepository;
@@ -33,7 +33,7 @@ public class MyCSVService implements CSVService {
   private final WebHook webHook;
 
   @Autowired
-  public MyCSVService(
+  public CSVFileService(
       CSVFileStorageService csvFileStorageService,
       AuthenticationService authenticationService,
       MyFileRepository myFileRepository,
@@ -62,7 +62,6 @@ public class MyCSVService implements CSVService {
         fileSaved.getId(),
         fileSaved.getName(),
         new ArrayList<>(),
-        4,
         "http://localhost:8080/api/files/" + fileSaved.getId());
 
     return csvFileMapper.myFileToCSVFileDto(fileSaved);

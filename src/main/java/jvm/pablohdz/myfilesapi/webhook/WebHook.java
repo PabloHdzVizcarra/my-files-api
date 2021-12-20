@@ -19,7 +19,6 @@ public class WebHook {
       String fileId,
       String filename,
       Collection<String> notes,
-      int size,
       String uri) {
     EventHook event = new EventHook();
     event.setEventType(eventType);
@@ -27,7 +26,6 @@ public class WebHook {
     event.setName(filename);
     event.setNotes(notes);
     event.setResourceType("file");
-    event.setSize(size);
     event.setUri(uri);
 
     sendEvent(event);

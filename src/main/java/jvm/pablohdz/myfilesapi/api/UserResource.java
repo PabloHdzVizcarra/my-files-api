@@ -1,9 +1,8 @@
 package jvm.pablohdz.myfilesapi.api;
 
 import java.util.Collection;
-import java.util.List;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
-import jvm.pablohdz.myfilesapi.service.CSVService;
+import jvm.pablohdz.myfilesapi.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +24,10 @@ import jvm.pablohdz.myfilesapi.service.UserService;
 @RequestMapping("/api")
 public class UserResource {
   private final UserService userService;
-  private final CSVService csvService;
+  private final FileService csvService;
 
   @Autowired
-  public UserResource(UserService userService, CSVService csvService) {
+  public UserResource(UserService userService, FileService csvService) {
     this.userService = userService;
     this.csvService = csvService;
   }

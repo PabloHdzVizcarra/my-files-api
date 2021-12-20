@@ -51,6 +51,11 @@ public class MyFile {
     this.storageId = storageId;
   }
 
+  public MyFile(String id, String filename) {
+    this.id = id;
+    this.name = filename;
+  }
+
   @PrePersist
   protected void prePersist() {
     if (this.createdAt == null) createdAt = new Date().getTime();

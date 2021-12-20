@@ -7,7 +7,7 @@ import jvm.pablohdz.myfilesapi.entity.FileCSVData;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface CSVService {
-  CSVFileDto uploadFileCSV(MultipartFile csvFile);
+  CSVFileDto uploadFile(MultipartFile csvFile);
 
   FileCSVData downloadById(String s);
 

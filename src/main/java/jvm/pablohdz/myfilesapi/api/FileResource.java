@@ -40,7 +40,7 @@ public class FileResource {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<CSVFileDto> uploadCSVFile(@RequestParam("file") MultipartFile file) {
-    CSVFileDto dto = csvService.uploadFileCSV(file);
+    CSVFileDto dto = csvService.uploadFile(file);
     URI uri =
         ServletUriComponentsBuilder.fromCurrentRequest()
             .path("/{id}")

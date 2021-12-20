@@ -5,6 +5,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -16,12 +17,15 @@ import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
 import jvm.pablohdz.myfilesapi.service.implementations.MyCSVService;
+import jvm.pablohdz.myfilesapi.webhook.EventHook;
+import jvm.pablohdz.myfilesapi.webhook.WebHook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.mock.web.MockMultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class MyCSVServiceTest {
@@ -36,17 +40,20 @@ class MyCSVServiceTest {
   public static final User USER = new User(USERNAME);
   public static final MyFile FILE_EMPTY = new MyFile();
   public static final CSVFileDto FILE_DTO = new CSVFileDto();
+  public static final MockMultipartFile MOCK_MULTIPART_FILE = new MockMultipartFile("test.csv",
+      "some content".getBytes());
   private CSVService csvService;
   @Mock CSVFileStorageService csvFileStorageService;
   @Mock AuthenticationService authenticationService;
   @Mock MyFileRepository myFileRepository;
   @Mock CSVFileMapper csvFileMapper;
+  @Mock WebHook webHook;
 
   @BeforeEach
   void setUp() {
     csvService =
         new MyCSVService(
-            csvFileStorageService, authenticationService, myFileRepository, csvFileMapper);
+            csvFileStorageService, authenticationService, myFileRepository, csvFileMapper, webHook);
   }
 
   @Test

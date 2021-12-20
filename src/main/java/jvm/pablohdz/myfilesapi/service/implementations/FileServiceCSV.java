@@ -1,8 +1,8 @@
 package jvm.pablohdz.myfilesapi.service.implementations;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
@@ -17,6 +17,7 @@ import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
 import jvm.pablohdz.myfilesapi.service.AuthenticationService;
 import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
 import jvm.pablohdz.myfilesapi.service.FileService;
+import jvm.pablohdz.myfilesapi.webhook.EventHook;
 import jvm.pablohdz.myfilesapi.webhook.WebHook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -25,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class CSVFileService implements FileService {
+public class FileServiceCSV implements FileService {
   private final CSVFileStorageService csvFileStorageService;
   private final AuthenticationService authenticationService;
   private final MyFileRepository myFileRepository;
@@ -33,7 +34,7 @@ public class CSVFileService implements FileService {
   private final WebHook webHook;
 
   @Autowired
-  public CSVFileService(
+  public FileServiceCSV(
       CSVFileStorageService csvFileStorageService,
       AuthenticationService authenticationService,
       MyFileRepository myFileRepository,
@@ -57,14 +58,24 @@ public class CSVFileService implements FileService {
     String keyFile = csvFileStorageService.upload(bytes, fileName, currentUser.getUsername());
     MyFile CSVFile = createFile(fileName, currentUser, keyFile);
     MyFile fileSaved = myFileRepository.save(CSVFile);
-    webHook.createEvent(
-        "added",
-        fileSaved.getId(),
-        fileSaved.getName(),
-        new ArrayList<>(),
-        "http://localhost:8080/api/files/" + fileSaved.getId());
 
+    sendAddedEvent(fileSaved);
     return csvFileMapper.myFileToCSVFileDto(fileSaved);
+  }
+
+  /**
+   * Send added event by webhook
+   *
+   * @param fileSaved a file before saved
+   */
+  private void sendAddedEvent(MyFile fileSaved) {
+    EventHook addEvent =
+        webHook.createAddEvent(
+            fileSaved.getId(),
+            fileSaved.getName(),
+            List.of(),
+            "http://localhost:8080/api/files/" + fileSaved.getId());
+    webHook.sendEvent(addEvent);
   }
 
   @Override

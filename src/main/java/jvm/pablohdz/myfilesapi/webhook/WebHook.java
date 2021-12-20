@@ -14,24 +14,12 @@ public class WebHook {
     this.publisher = publisher;
   }
 
-  public void createEvent(
-      String eventType,
-      String fileId,
-      String filename,
-      Collection<String> notes,
-      String uri) {
-    EventHook event = new EventHook();
-    event.setEventType(eventType);
-    event.setId(fileId);
-    event.setName(filename);
-    event.setNotes(notes);
-    event.setResourceType("file");
-    event.setUri(uri);
-
-    sendEvent(event);
+  public EventHook createAddEvent(
+      String id, String filename, Collection<String> notes, String uri) {
+    return new EventHook("added", id, filename, notes, uri);
   }
 
-  private void sendEvent(EventHook event) {
+  public void sendEvent(EventHook event) {
     publisher.publish(event);
   }
 }

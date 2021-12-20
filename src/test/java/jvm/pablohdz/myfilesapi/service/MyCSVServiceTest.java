@@ -17,7 +17,8 @@ import jvm.pablohdz.myfilesapi.mapper.CSVFileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
-import jvm.pablohdz.myfilesapi.service.implementations.CSVFileService;
+import jvm.pablohdz.myfilesapi.service.implementations.FileServiceCSV;
+import jvm.pablohdz.myfilesapi.webhook.EventHook;
 import jvm.pablohdz.myfilesapi.webhook.WebHook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,7 @@ class MyCSVServiceTest {
   public static final MockMultipartFile MOCK_MULTIPART_FILE =
       new MockMultipartFile("test.csv", FILENAME, "csv", "example content".getBytes());
   public static final MyFile FILE_ID_NAME = new MyFile("file_ad879d", "example.csv");
+  public static final EventHook EVENT = new EventHook();
   private FileService csvService;
   @Mock CSVFileStorageService csvFileStorageService;
   @Mock AuthenticationService authenticationService;
@@ -55,7 +57,7 @@ class MyCSVServiceTest {
   @BeforeEach
   void setUp() {
     csvService =
-        new CSVFileService(
+        new FileServiceCSV(
             csvFileStorageService, authenticationService, myFileRepository, csvFileMapper, webHook);
   }
 
@@ -94,12 +96,10 @@ class MyCSVServiceTest {
     when(myFileRepository.findByName(FILENAME)).thenReturn(Optional.empty());
     when(authenticationService.getCurrentUser()).thenReturn(USER);
     when(myFileRepository.save(any())).thenReturn(FILE_ID_NAME);
-    String id = FILE_ID_NAME.getId();
-    String filename = MOCK_MULTIPART_FILE.getOriginalFilename();
-    String uri = "http://localhost:8080/api/files/" + id;
+    when(webHook.createAddEvent(any(), any(), any(), any())).thenReturn(EVENT);
 
     csvService.uploadFile(MOCK_MULTIPART_FILE);
 
-    Mockito.verify(webHook, times(1)).createEvent("added", id, filename, List.of(), uri);
+    Mockito.verify(webHook, times(1)).sendEvent(EVENT);
   }
 }

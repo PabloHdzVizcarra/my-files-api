@@ -3,6 +3,7 @@ package jvm.pablohdz.myfilesapi.webhook;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 public class EventHook {
@@ -15,10 +16,24 @@ public class EventHook {
   private Collection<String> notes;
 
   public EventHook() {
+    this.dateAdded = getCurrentTime();
+  }
+
+  public EventHook(String eventType, String id, String filename, Collection<String> notes, String uri) {
+    this.eventType = eventType;
+    this.id = id;
+    this.name = filename;
+    this.notes = notes;
+    this.uri = uri;
+    this.resourceType = "file";
+    this.dateAdded = getCurrentTime();
+  }
+
+  private String getCurrentTime() {
     TimeZone timeZone = TimeZone.getDefault();
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
     dateFormat.setTimeZone(timeZone);
-    this.dateAdded = dateFormat.format(new Date());
+    return dateFormat.format(new Date());
   }
 
   public String getId() {

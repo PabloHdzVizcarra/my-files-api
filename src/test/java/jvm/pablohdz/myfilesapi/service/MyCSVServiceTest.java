@@ -13,7 +13,7 @@ import java.util.Optional;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.entity.FileCSVData;
 import jvm.pablohdz.myfilesapi.exception.FileCSVNotFoundException;
-import jvm.pablohdz.myfilesapi.mapper.CSVFileMapper;
+import jvm.pablohdz.myfilesapi.mapper.FileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
@@ -49,10 +49,12 @@ class MyCSVServiceTest {
       new MyFile("file_ad879d", "example.csv", "s3/bucket/file_hjf83yh-as");
   public static final EventHook EVENT = new EventHook();
   private FileService csvService;
-  @Mock CSVFileStorageService csvFileStorageService;
+  @Mock
+  FileStorageService csvFileStorageService;
   @Mock AuthenticationService authenticationService;
   @Mock MyFileRepository myFileRepository;
-  @Mock CSVFileMapper csvFileMapper;
+  @Mock
+  FileMapper csvFileMapper;
   @Mock WebHook webHook;
 
   @BeforeEach

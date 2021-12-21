@@ -3,7 +3,7 @@ package jvm.pablohdz.myfilesapi.service;
 import java.util.List;
 import org.springframework.core.io.InputStreamResource;
 
-public interface CSVFileStorageService {
+public interface FileStorageService {
   String upload(byte[] file, String fileName, String username);
 
   InputStreamResource getFile(String storageId);

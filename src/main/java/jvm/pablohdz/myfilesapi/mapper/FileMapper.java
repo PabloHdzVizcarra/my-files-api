@@ -10,7 +10,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface CSVFileMapper {
+public interface FileMapper {
 
   @Mapping(target = "createdAt", expression = "java(dateISOFormat(file.getCreatedAt()))")
   CSVFileDto myFileToCSVFileDto(MyFile file);

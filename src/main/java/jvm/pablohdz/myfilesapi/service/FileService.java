@@ -14,4 +14,6 @@ public interface FileService {
   CSVFileDataDto update(String id, MultipartFile file);
 
   Collection<CSVFileDto> getAllFilesByUserId(String userId);
+
+  void deleteFile(String id);
 }

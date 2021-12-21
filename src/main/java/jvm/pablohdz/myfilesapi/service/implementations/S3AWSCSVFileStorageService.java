@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
+import jvm.pablohdz.myfilesapi.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.lang.Nullable;
@@ -25,7 +25,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
 @Service
-public class S3AWSCSVFileStorageService implements CSVFileStorageService {
+public class S3AWSCSVFileStorageService implements FileStorageService {
   public static final String FILENAME = "filename";
   public static final String PRE_KEY_ID = "file_";
 

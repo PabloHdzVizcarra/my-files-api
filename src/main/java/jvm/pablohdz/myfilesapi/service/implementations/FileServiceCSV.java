@@ -10,12 +10,12 @@ import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.entity.FileCSVData;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
 import jvm.pablohdz.myfilesapi.exception.FileCSVNotFoundException;
-import jvm.pablohdz.myfilesapi.mapper.CSVFileMapper;
+import jvm.pablohdz.myfilesapi.mapper.FileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
 import jvm.pablohdz.myfilesapi.service.AuthenticationService;
-import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
+import jvm.pablohdz.myfilesapi.service.FileStorageService;
 import jvm.pablohdz.myfilesapi.service.FileService;
 import jvm.pablohdz.myfilesapi.webhook.EventHook;
 import jvm.pablohdz.myfilesapi.webhook.WebHook;
@@ -29,24 +29,24 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileServiceCSV implements FileService {
-  private final CSVFileStorageService csvFileStorageService;
+  Logger logger = LoggerFactory.getLogger(FileServiceCSV.class);
+  private final FileStorageService fileStorageService;
   private final AuthenticationService authenticationService;
   private final MyFileRepository myFileRepository;
-  private final CSVFileMapper csvFileMapper;
+  private final FileMapper fileMapper;
   private final WebHook webHook;
-  Logger logger = LoggerFactory.getLogger(FileServiceCSV.class);
 
   @Autowired
   public FileServiceCSV(
-      CSVFileStorageService csvFileStorageService,
+      FileStorageService fileStorageService,
       AuthenticationService authenticationService,
       MyFileRepository myFileRepository,
-      CSVFileMapper csvFileMapper,
+      FileMapper fileMapper,
       WebHook webHook) {
-    this.csvFileStorageService = csvFileStorageService;
+    this.fileStorageService = fileStorageService;
     this.authenticationService = authenticationService;
     this.myFileRepository = myFileRepository;
-    this.csvFileMapper = csvFileMapper;
+    this.fileMapper = fileMapper;
     this.webHook = webHook;
   }
 
@@ -58,12 +58,12 @@ public class FileServiceCSV implements FileService {
     verifyIfFileHasAlreadyRegistered(fileName);
 
     User currentUser = authenticationService.getCurrentUser();
-    String keyFile = csvFileStorageService.upload(bytes, fileName, currentUser.getUsername());
+    String keyFile = fileStorageService.upload(bytes, fileName, currentUser.getUsername());
     MyFile CSVFile = createFile(fileName, currentUser, keyFile);
     MyFile fileSaved = myFileRepository.save(CSVFile);
 
     sendAddedEvent(fileSaved);
-    return csvFileMapper.myFileToCSVFileDto(fileSaved);
+    return fileMapper.myFileToCSVFileDto(fileSaved);
   }
 
   /**
@@ -86,7 +86,7 @@ public class FileServiceCSV implements FileService {
     MyFile file = getFileFromRepository(id);
     String storageId = file.getStorageId();
     String fileName = file.getName();
-    InputStreamResource data = csvFileStorageService.getFile(storageId);
+    InputStreamResource data = fileStorageService.getFile(storageId);
     return new FileCSVData(fileName, data);
   }
 
@@ -107,7 +107,7 @@ public class FileServiceCSV implements FileService {
     sendEventUpdateToWebHook(id, originalFilename);
 
     logger.info("new update event its created to file with id: {}", id);
-    return csvFileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
+    return fileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
   }
 
   private void sendEventUpdateToWebHook(String id, String originalFilename) {
@@ -124,7 +124,7 @@ public class FileServiceCSV implements FileService {
   private void updateFileInServerFiles(
       byte[] bytesFromMultipartFile, String originalFilename, MyFile foundFile) {
     String storageId = foundFile.getStorageId();
-    csvFileStorageService.update(storageId, bytesFromMultipartFile, originalFilename);
+    fileStorageService.update(storageId, bytesFromMultipartFile, originalFilename);
   }
 
   private byte[] getBytesFromMultipartFile(MultipartFile file) {
@@ -180,7 +180,10 @@ public class FileServiceCSV implements FileService {
     Collection<MyFile> allFilesByUser = myFileRepository.findAllByUser(user);
 
     return allFilesByUser.stream()
-        .map(csvFileMapper::toCSVFileDto)
+        .map(fileMapper::toCSVFileDto)
         .collect(Collectors.toUnmodifiableList());
   }
+
+  @Override
+  public void deleteFile(String id) {}
 }

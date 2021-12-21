@@ -107,7 +107,7 @@ class MyCSVServiceTest {
   @Test
   void whenUpdateFile_thenSendEvent() {
     when(myFileRepository.findById(FILE_ID)).thenReturn(Optional.of(FILE_ID_NAME));
-    when(webHook.createUpdateEvent(any(), any(), any(), any())).thenReturn(EVENT);
+    when(webHook.createUpdateEvent(any(), any(), any())).thenReturn(EVENT);
 
     csvService.update(FILE_ID, MOCK_MULTIPART_FILE);
 

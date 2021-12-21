@@ -109,7 +109,7 @@ public class FileServiceCSV implements FileService {
 
     EventHook updateEvent =
         webHook.createUpdateEvent(
-            id, originalFilename, List.of(), "http://localhost:8080/api/files/" + id);
+            id, originalFilename, List.of());
 
     webHook.sendEvent(updateEvent);
     logger.info("new update event its created to file with id: {}", id);

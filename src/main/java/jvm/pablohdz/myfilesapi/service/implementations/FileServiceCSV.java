@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
-import jvm.pablohdz.myfilesapi.entity.FileCSVData;
+import jvm.pablohdz.myfilesapi.entity.FileDataResponse;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
 import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
 import jvm.pablohdz.myfilesapi.mapper.FileMapper;
@@ -82,12 +82,16 @@ public class FileServiceCSV implements FileService {
   }
 
   @Override
-  public FileCSVData downloadById(String id) {
+  public FileDataResponse downloadById(String id) {
     MyFile file = getFileFromRepository(id);
     String storageId = file.getStorageId();
     String fileName = file.getName();
     InputStreamResource data = fileStorageService.getFile(storageId);
-    return new FileCSVData(fileName, data);
+
+    EventHook event = webHook.createDownloadEvent(id, fileName, List.of());
+    webHook.sendEvent(event);
+
+    return new FileDataResponse(fileName, data);
   }
 
   private MyFile getFileFromRepository(String id) {

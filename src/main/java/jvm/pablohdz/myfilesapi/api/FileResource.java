@@ -6,7 +6,7 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
-import jvm.pablohdz.myfilesapi.entity.FileCSVData;
+import jvm.pablohdz.myfilesapi.entity.FileDataResponse;
 import jvm.pablohdz.myfilesapi.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -40,7 +40,7 @@ public class FileResource {
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<CSVFileDto> uploadFile(@RequestParam("file") MultipartFile file) {
+  public ResponseEntity<CSVFileDto> upload(@RequestParam("file") MultipartFile file) {
     CSVFileDto dto = fileService.uploadFile(file);
     URI uri =
         ServletUriComponentsBuilder.fromCurrentRequest()
@@ -51,8 +51,8 @@ public class FileResource {
   }
 
   @GetMapping(value = "/{id}", produces = "text/csv")
-  public ResponseEntity<InputStreamResource> readByID(@PathVariable("id") String id) {
-    FileCSVData fileCSVData = fileService.downloadById(id);
+  public ResponseEntity<InputStreamResource> download(@PathVariable("id") String id) {
+    FileDataResponse fileCSVData = fileService.downloadById(id);
     String csvFileName = fileCSVData.getFilename();
     InputStreamResource data = fileCSVData.getDataStreamResource();
 

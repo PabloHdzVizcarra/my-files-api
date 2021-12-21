@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import jvm.pablohdz.myfilesapi.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,7 @@ public class S3AWSFileStorageService implements FileStorageService {
     try {
       byte[] bytesFile = s3ClientObject.readAllBytes();
       ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytesFile);
+      // TODO: 20/12/2021 refactor return
       return new InputStreamResource(byteArrayInputStream);
     } catch (IOException e) {
       e.printStackTrace();

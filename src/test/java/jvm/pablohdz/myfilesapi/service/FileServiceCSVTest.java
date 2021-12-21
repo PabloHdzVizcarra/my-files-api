@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
-import jvm.pablohdz.myfilesapi.entity.FileCSVData;
+import jvm.pablohdz.myfilesapi.entity.FileDataResponse;
 import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
 import jvm.pablohdz.myfilesapi.mapper.FileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
@@ -49,7 +49,7 @@ class FileServiceCSVTest {
   public static final MyFile FILE_ID_NAME =
       new MyFile("file_ad879d", "example.csv", "s3/bucket/file_hjf83yh-as");
   public static final EventHook EVENT = new EventHook();
-  private FileService fileService;
+  private FileService underTest;
   @Mock FileStorageService csvFileStorageService;
   @Mock AuthenticationService authenticationService;
   @Mock MyFileRepository fileRepository;
@@ -58,7 +58,7 @@ class FileServiceCSVTest {
 
   @BeforeEach
   void setUp() {
-    fileService =
+    underTest =
         new FileServiceCSV(
             csvFileStorageService, authenticationService, fileRepository, fileMapper, webHook);
   }
@@ -68,16 +68,16 @@ class FileServiceCSVTest {
     when(fileRepository.findById(FILE_ID)).thenReturn(Optional.of(CSV_FILE));
     when(csvFileStorageService.getFile(STORAGE_ID)).thenReturn(FILE_INPUT_STREAM);
 
-    FileCSVData fileCSVData = fileService.downloadById(FILE_ID);
+    FileDataResponse fileCSVData = underTest.downloadById(FILE_ID);
 
-    assertThat(fileCSVData).isNotNull().isInstanceOf(FileCSVData.class);
+    assertThat(fileCSVData).isNotNull().isInstanceOf(FileDataResponse.class);
   }
 
   @Test
   void given_InvalidId_when_DownloadFile_thenThrownException() {
     when(fileRepository.findById(WRONG_FILE_ID)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> fileService.downloadById(WRONG_FILE_ID))
+    assertThatThrownBy(() -> underTest.downloadById(WRONG_FILE_ID))
         .hasMessageContaining(WRONG_FILE_ID)
         .isInstanceOf(FileNotRegisterException.class);
   }
@@ -88,7 +88,7 @@ class FileServiceCSVTest {
     when(fileRepository.findAllByUser(USER)).thenReturn(List.of(FILE_EMPTY, FILE_EMPTY));
     when(fileMapper.toCSVFileDto(FILE_EMPTY)).thenReturn(FILE_DTO);
 
-    Collection<CSVFileDto> collection = fileService.getAllFilesByUserId(USER_ID);
+    Collection<CSVFileDto> collection = underTest.getAllFilesByUserId(USER_ID);
 
     assertThat(collection).asList().isNotEmpty().hasSize(2);
   }
@@ -100,7 +100,7 @@ class FileServiceCSVTest {
     when(fileRepository.save(any())).thenReturn(FILE_ID_NAME);
     when(webHook.createAddEvent(any(), any(), any(), any())).thenReturn(EVENT);
 
-    fileService.uploadFile(MOCK_MULTIPART_FILE);
+    underTest.uploadFile(MOCK_MULTIPART_FILE);
 
     Mockito.verify(webHook, times(1)).sendEvent(EVENT);
   }
@@ -110,16 +110,27 @@ class FileServiceCSVTest {
     when(fileRepository.findById(FILE_ID)).thenReturn(Optional.of(FILE_ID_NAME));
     when(webHook.createUpdateEvent(any(), any(), any())).thenReturn(EVENT);
 
-    fileService.update(FILE_ID, MOCK_MULTIPART_FILE);
+    underTest.update(FILE_ID, MOCK_MULTIPART_FILE);
 
     Mockito.verify(webHook, times(1)).sendEvent(EVENT);
   }
 
   @Test
   void givenValidId_whenDeleteFile() {
-    when(fileRepository.findById(FILE_ID))
-        .thenReturn(Optional.of(FILE_ID_NAME));
+    when(fileRepository.findById(FILE_ID)).thenReturn(Optional.of(FILE_ID_NAME));
 
-    assertThatCode(() -> fileService.deleteFile(FILE_ID)).doesNotThrowAnyException();
+    assertThatCode(() -> underTest.deleteFile(FILE_ID)).doesNotThrowAnyException();
+  }
+
+  @Test
+  void givenValidId_whenDownloadFile_thenSendDownloadEvent() {
+    when(fileRepository.findById(FILE_ID)).thenReturn(Optional.of(FILE_ID_NAME));
+    when(csvFileStorageService.getFile(FILE_ID_NAME.getStorageId()))
+        .thenReturn(new InputStreamResource(new ByteArrayInputStream("data".getBytes())));
+
+    underTest.downloadById(FILE_ID);
+
+    Mockito.verify(webHook, times(1)).createDownloadEvent(any(), any(), any());
+    Mockito.verify(webHook, times(1)).sendEvent(any());
   }
 }

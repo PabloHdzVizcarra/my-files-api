@@ -21,7 +21,7 @@ public class WebHook {
 
   public EventHook createAddEvent(
       String id, String filename, Collection<String> notes, String uri) {
-    return new EventHook("added", id, filename, notes, uri);
+    return new EventHook(TypeEvent.ADDED, id, filename, notes, uri);
   }
 
   public void sendEvent(EventHook event) {
@@ -29,7 +29,7 @@ public class WebHook {
   }
 
   public EventHook createUpdateEvent(String fileId, String filename, Collection<String> notes) {
-    return new EventHook("update", fileId, filename, notes, createUriToFile(fileId));
+    return new EventHook(TypeEvent.UPDATE, fileId, filename, notes, createUriToFile(fileId));
   }
 
   private String createUriToFile(String id) {

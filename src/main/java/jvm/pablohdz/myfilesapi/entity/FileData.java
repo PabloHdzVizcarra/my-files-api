@@ -3,25 +3,25 @@ package jvm.pablohdz.myfilesapi.entity;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.multipart.MultipartFile;
 
-public class FileDataResponse {
+public class FileData {
   private String filename;
   private MultipartFile data;
   private InputStreamResource dataStreamResource;
   private byte[] bytes;
   private String contentType;
 
-  public FileDataResponse(String filename, byte[] bytes, String contentType) {
+  public FileData(String filename, byte[] bytes, String contentType) {
     this.filename = filename;
     this.bytes = bytes;
     this.contentType = contentType;
   }
 
-  public FileDataResponse(String filename, MultipartFile data) {
+  public FileData(String filename, MultipartFile data) {
     this.filename = filename;
     this.data = data;
   }
 
-  public FileDataResponse(String filename, InputStreamResource dataStreamResource) {
+  public FileData(String filename, InputStreamResource dataStreamResource) {
     this.filename = filename;
     this.dataStreamResource = dataStreamResource;
   }

@@ -12,7 +12,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
-import jvm.pablohdz.myfilesapi.entity.FileDataResponse;
+import jvm.pablohdz.myfilesapi.dto.FileServiceDataResponse;
+import jvm.pablohdz.myfilesapi.entity.FileData;
 import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
 import jvm.pablohdz.myfilesapi.mapper.FileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
@@ -27,7 +28,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,6 +40,8 @@ class FileServiceCSVTest {
   public static final MyFile CSV_FILE = new MyFile(STORAGE_ID);
   public static final InputStreamResource FILE_INPUT_STREAM =
       new InputStreamResource(new ByteArrayInputStream("data".getBytes()));
+  public static final ByteArrayResource RESOURCE_CSV =
+      new ByteArrayResource("example data".getBytes());
   private static final String WRONG_FILE_ID = "invalid-id";
   public static final String USER_ID = "us_xxx";
   public static final String USERNAME = "john@terminator";
@@ -50,7 +55,7 @@ class FileServiceCSVTest {
       new MyFile("file_ad879d", "example.csv", "s3/bucket/file_hjf83yh-as");
   public static final EventHook EVENT = new EventHook();
   private FileService underTest;
-  @Mock FileStorageService csvFileStorageService;
+  @Mock FileStorageService fileStorageService;
   @Mock AuthenticationService authenticationService;
   @Mock MyFileRepository fileRepository;
   @Mock FileMapper fileMapper;
@@ -60,24 +65,24 @@ class FileServiceCSVTest {
   void setUp() {
     underTest =
         new FileServiceCSV(
-            csvFileStorageService, authenticationService, fileRepository, fileMapper, webHook);
+            fileStorageService, authenticationService, fileRepository, fileMapper, webHook);
   }
 
   @Test
   void whenReadFileById_thenReturnTheFile() {
     when(fileRepository.findById(FILE_ID)).thenReturn(Optional.of(CSV_FILE));
-    when(csvFileStorageService.getFile(STORAGE_ID)).thenReturn(FILE_INPUT_STREAM);
+    when(fileStorageService.getFile(STORAGE_ID)).thenReturn(RESOURCE_CSV);
 
-    FileDataResponse fileCSVData = underTest.downloadById(FILE_ID);
+    FileServiceDataResponse fileCSVData = underTest.download(FILE_ID);
 
-    assertThat(fileCSVData).isNotNull().isInstanceOf(FileDataResponse.class);
+    assertThat(fileCSVData).isNotNull().isInstanceOf(Resource.class);
   }
 
   @Test
   void given_InvalidId_when_DownloadFile_thenThrownException() {
     when(fileRepository.findById(WRONG_FILE_ID)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> underTest.downloadById(WRONG_FILE_ID))
+    assertThatThrownBy(() -> underTest.download(WRONG_FILE_ID))
         .hasMessageContaining(WRONG_FILE_ID)
         .isInstanceOf(FileNotRegisterException.class);
   }
@@ -125,10 +130,9 @@ class FileServiceCSVTest {
   @Test
   void givenValidId_whenDownloadFile_thenSendDownloadEvent() {
     when(fileRepository.findById(FILE_ID)).thenReturn(Optional.of(FILE_ID_NAME));
-    when(csvFileStorageService.getFile(FILE_ID_NAME.getStorageId()))
-        .thenReturn(new InputStreamResource(new ByteArrayInputStream("data".getBytes())));
+    when(fileStorageService.getFile(FILE_ID_NAME.getStorageId())).thenReturn(RESOURCE_CSV);
 
-    underTest.downloadById(FILE_ID);
+    underTest.download(FILE_ID);
 
     Mockito.verify(webHook, times(1)).createDownloadEvent(any(), any(), any());
     Mockito.verify(webHook, times(1)).sendEvent(any());

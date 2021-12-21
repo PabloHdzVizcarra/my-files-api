@@ -14,19 +14,20 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @Disabled("Only run in host development")
 class S3AWSCSVFileStorageServiceTest {
-  private FileStorageService csvFileStorageService;
+  private FileStorageService fileStorageService;
 
   @BeforeEach
   void setUp() {
-    csvFileStorageService = new S3AWSFileStorageService();
-    ReflectionTestUtils.setField(csvFileStorageService, "bucketName", "my-files-storage");
-    ReflectionTestUtils.setField(csvFileStorageService, "prefixKey", "my.files/");
+    fileStorageService = new AWSs3FileStorageService();
+    ReflectionTestUtils.setField(fileStorageService, "bucketName", "my-files-storage");
+    ReflectionTestUtils.setField(fileStorageService, "prefixKey", "my.files/");
   }
 
   @Test
@@ -35,7 +36,7 @@ class S3AWSCSVFileStorageServiceTest {
     Path path = Path.of("src/main/resources/csv/test.csv");
     byte[] fileBytes = Files.readAllBytes(path);
     // Act
-    String keyObjectUploaded = csvFileStorageService.upload(fileBytes, "example", "john");
+    String keyObjectUploaded = fileStorageService.upload(fileBytes, "example", "john");
     // Assert
     Assertions.assertThat(keyObjectUploaded).isInstanceOf(String.class);
   }
@@ -45,14 +46,14 @@ class S3AWSCSVFileStorageServiceTest {
     // Arrange
     String id = "file_csv/my.files/file.csv_106ef207-6082-4663-995f-fdef4150cac4";
     // Act
-    InputStreamResource file = csvFileStorageService.getFile(id);
+    ByteArrayResource file = fileStorageService.getFile(id);
     // Assert
     assertThat(file).isNotNull().isInstanceOf(InputStreamResource.class);
   }
 
   @Test
   void getListOfObjectByPrefix() {
-    List<String> list = csvFileStorageService.findAllByPrefix("james.java01");
+    List<String> list = fileStorageService.findAllByPrefix("james.java01");
 
     assertThat(list).asList().isNotEmpty().hasSize(3).isInstanceOf(Collection.class);
   }

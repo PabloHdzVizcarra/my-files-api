@@ -1,12 +1,12 @@
 package jvm.pablohdz.myfilesapi.service;
 
 import java.util.List;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.ByteArrayResource;
 
 public interface FileStorageService {
   String upload(byte[] file, String fileName, String username);
 
-  InputStreamResource getFile(String storageId);
+  ByteArrayResource getFile(String storageId);
 
   void update(String storageId, byte[] bytes, String filename);
 

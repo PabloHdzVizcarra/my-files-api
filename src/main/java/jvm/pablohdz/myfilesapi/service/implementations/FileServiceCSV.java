@@ -102,18 +102,29 @@ public class FileServiceCSV implements FileService {
     String contentType = file.getContentType();
     String originalFilename = file.getOriginalFilename();
     MyFile foundFile = getFileFromRepository(id);
-    String storageId = foundFile.getStorageId();
-    csvFileStorageService.update(storageId, bytesFromMultipartFile, originalFilename);
-    foundFile.setName(originalFilename);
-    myFileRepository.save(foundFile);
+    updateFileInServerFiles(bytesFromMultipartFile, originalFilename, foundFile);
+    updateFileInRepository(originalFilename, foundFile);
+    sendEventUpdateToWebHook(id, originalFilename);
 
-    EventHook updateEvent =
-        webHook.createUpdateEvent(
-            id, originalFilename, List.of());
-
-    webHook.sendEvent(updateEvent);
     logger.info("new update event its created to file with id: {}", id);
     return csvFileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
+  }
+
+  private void sendEventUpdateToWebHook(String id, String originalFilename) {
+    EventHook updateEvent = webHook.createUpdateEvent(id, originalFilename, List.of());
+
+    webHook.sendEvent(updateEvent);
+  }
+
+  private void updateFileInRepository(String originalFilename, MyFile foundFile) {
+    foundFile.setName(originalFilename);
+    myFileRepository.save(foundFile);
+  }
+
+  private void updateFileInServerFiles(
+      byte[] bytesFromMultipartFile, String originalFilename, MyFile foundFile) {
+    String storageId = foundFile.getStorageId();
+    csvFileStorageService.update(storageId, bytesFromMultipartFile, originalFilename);
   }
 
   private byte[] getBytesFromMultipartFile(MultipartFile file) {

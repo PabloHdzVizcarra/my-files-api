@@ -107,4 +107,7 @@ public class S3AWSCSVFileStorageService implements FileStorageService {
   private String generateUniqueKeyToFile() {
     return PRE_KEY_ID + UUID.randomUUID();
   }
+
+  @Override
+  public void delete(String storageId) {}
 }

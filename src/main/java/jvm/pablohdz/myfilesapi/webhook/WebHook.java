@@ -48,4 +48,9 @@ public class WebHook {
       throw new IllegalStateException(e.getMessage());
     }
   }
+
+  public EventHook createDeleteEvent() {
+
+    return null;
+  }
 }

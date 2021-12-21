@@ -9,7 +9,7 @@ import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.entity.FileCSVData;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
-import jvm.pablohdz.myfilesapi.exception.FileCSVNotFoundException;
+import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
 import jvm.pablohdz.myfilesapi.mapper.FileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
@@ -32,7 +32,7 @@ public class FileServiceCSV implements FileService {
   Logger logger = LoggerFactory.getLogger(FileServiceCSV.class);
   private final FileStorageService fileStorageService;
   private final AuthenticationService authenticationService;
-  private final MyFileRepository myFileRepository;
+  private final MyFileRepository fileRepository;
   private final FileMapper fileMapper;
   private final WebHook webHook;
 
@@ -45,7 +45,7 @@ public class FileServiceCSV implements FileService {
       WebHook webHook) {
     this.fileStorageService = fileStorageService;
     this.authenticationService = authenticationService;
-    this.myFileRepository = myFileRepository;
+    this.fileRepository = myFileRepository;
     this.fileMapper = fileMapper;
     this.webHook = webHook;
   }
@@ -60,7 +60,7 @@ public class FileServiceCSV implements FileService {
     User currentUser = authenticationService.getCurrentUser();
     String keyFile = fileStorageService.upload(bytes, fileName, currentUser.getUsername());
     MyFile CSVFile = createFile(fileName, currentUser, keyFile);
-    MyFile fileSaved = myFileRepository.save(CSVFile);
+    MyFile fileSaved = fileRepository.save(CSVFile);
 
     sendAddedEvent(fileSaved);
     return fileMapper.myFileToCSVFileDto(fileSaved);
@@ -91,8 +91,8 @@ public class FileServiceCSV implements FileService {
   }
 
   private MyFile getFileFromRepository(String id) {
-    Optional<MyFile> optionalMyFile = myFileRepository.findById(id);
-    return optionalMyFile.orElseThrow(() -> new FileCSVNotFoundException(id));
+    Optional<MyFile> optionalMyFile = fileRepository.findById(id);
+    return optionalMyFile.orElseThrow(() -> new FileNotRegisterException(id));
   }
 
   @Override
@@ -118,7 +118,7 @@ public class FileServiceCSV implements FileService {
 
   private void updateFileInRepository(String originalFilename, MyFile foundFile) {
     foundFile.setName(originalFilename);
-    myFileRepository.save(foundFile);
+    fileRepository.save(foundFile);
   }
 
   private void updateFileInServerFiles(
@@ -136,7 +136,7 @@ public class FileServiceCSV implements FileService {
   }
 
   private void verifyIfFileHasAlreadyRegistered(String filename) {
-    Optional<MyFile> optionalMyFile = myFileRepository.findByName(filename);
+    Optional<MyFile> optionalMyFile = fileRepository.findByName(filename);
     if (optionalMyFile.isPresent()) throw new CSVFileAlreadyRegisteredException(filename);
   }
 
@@ -177,7 +177,7 @@ public class FileServiceCSV implements FileService {
   @Transactional(readOnly = true)
   public Collection<CSVFileDto> getAllFilesByUserId(String userId) {
     User user = authenticationService.getCurrentUser();
-    Collection<MyFile> allFilesByUser = myFileRepository.findAllByUser(user);
+    Collection<MyFile> allFilesByUser = fileRepository.findAllByUser(user);
 
     return allFilesByUser.stream()
         .map(fileMapper::toCSVFileDto)
@@ -185,5 +185,16 @@ public class FileServiceCSV implements FileService {
   }
 
   @Override
-  public void deleteFile(String id) {}
+  public void deleteFile(String id) {
+    MyFile file = fileRepository.findById(id).orElseThrow(() -> new FileNotRegisterException(id));
+    String storageId = file.getStorageId();
+    fileStorageService.delete(storageId);
+
+    fileRepository.delete(file);
+    logger.debug("the file entity with id: {} is deleted", id);
+
+    EventHook event = webHook.createDeleteEvent();
+    webHook.sendEvent(event);
+    logger.debug("new delete event is send, the resource that be deleted contains the id: {}", id);
+  }
 }

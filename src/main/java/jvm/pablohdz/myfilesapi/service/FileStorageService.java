@@ -11,4 +11,6 @@ public interface FileStorageService {
   void update(String storageId, byte[] bytes, String filename);
 
   List<String> findAllByPrefix(String username);
+
+  void delete(String storageId);
 }

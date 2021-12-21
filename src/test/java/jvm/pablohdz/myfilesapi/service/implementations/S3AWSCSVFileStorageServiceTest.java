@@ -24,7 +24,7 @@ class S3AWSCSVFileStorageServiceTest {
 
   @BeforeEach
   void setUp() {
-    csvFileStorageService = new S3AWSCSVFileStorageService();
+    csvFileStorageService = new S3AWSFileStorageService();
     ReflectionTestUtils.setField(csvFileStorageService, "bucketName", "my-files-storage");
     ReflectionTestUtils.setField(csvFileStorageService, "prefixKey", "my.files/");
   }

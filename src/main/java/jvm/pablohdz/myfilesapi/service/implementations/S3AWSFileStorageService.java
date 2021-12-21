@@ -17,6 +17,8 @@ import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
@@ -25,7 +27,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
 @Service
-public class S3AWSCSVFileStorageService implements FileStorageService {
+public class S3AWSFileStorageService implements FileStorageService {
   public static final String FILENAME = "filename";
   public static final String PRE_KEY_ID = "file_";
 
@@ -109,5 +111,11 @@ public class S3AWSCSVFileStorageService implements FileStorageService {
   }
 
   @Override
-  public void delete(String storageId) {}
+  public void delete(String storageId) {
+    S3Client s3Client = createS3Client();
+    DeleteObjectRequest deleteObjectRequest =
+        DeleteObjectRequest.builder().bucket(bucketName).key(storageId).build();
+
+    s3Client.deleteObject(deleteObjectRequest);
+  }
 }

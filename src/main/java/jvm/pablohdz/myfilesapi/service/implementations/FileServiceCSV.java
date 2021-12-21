@@ -19,6 +19,8 @@ import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
 import jvm.pablohdz.myfilesapi.service.FileService;
 import jvm.pablohdz.myfilesapi.webhook.EventHook;
 import jvm.pablohdz.myfilesapi.webhook.WebHook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class FileServiceCSV implements FileService {
   private final MyFileRepository myFileRepository;
   private final CSVFileMapper csvFileMapper;
   private final WebHook webHook;
+  Logger logger = LoggerFactory.getLogger(FileServiceCSV.class);
 
   @Autowired
   public FileServiceCSV(
@@ -99,11 +102,29 @@ public class FileServiceCSV implements FileService {
     String contentType = file.getContentType();
     String originalFilename = file.getOriginalFilename();
     MyFile foundFile = getFileFromRepository(id);
-    String storageId = foundFile.getStorageId();
-    csvFileStorageService.update(storageId, bytesFromMultipartFile, originalFilename);
+    updateFileInServerFiles(bytesFromMultipartFile, originalFilename, foundFile);
+    updateFileInRepository(originalFilename, foundFile);
+    sendEventUpdateToWebHook(id, originalFilename);
+
+    logger.info("new update event its created to file with id: {}", id);
+    return csvFileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
+  }
+
+  private void sendEventUpdateToWebHook(String id, String originalFilename) {
+    EventHook updateEvent = webHook.createUpdateEvent(id, originalFilename, List.of());
+
+    webHook.sendEvent(updateEvent);
+  }
+
+  private void updateFileInRepository(String originalFilename, MyFile foundFile) {
     foundFile.setName(originalFilename);
     myFileRepository.save(foundFile);
-    return csvFileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
+  }
+
+  private void updateFileInServerFiles(
+      byte[] bytesFromMultipartFile, String originalFilename, MyFile foundFile) {
+    String storageId = foundFile.getStorageId();
+    csvFileStorageService.update(storageId, bytesFromMultipartFile, originalFilename);
   }
 
   private byte[] getBytesFromMultipartFile(MultipartFile file) {

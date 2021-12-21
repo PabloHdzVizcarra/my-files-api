@@ -51,9 +51,10 @@ public class MyFile {
     this.storageId = storageId;
   }
 
-  public MyFile(String id, String filename) {
+  public MyFile(String id, String filename, String storageId) {
     this.id = id;
     this.name = filename;
+    this.storageId = storageId;
   }
 
   @PrePersist

@@ -9,7 +9,7 @@ import java.util.TimeZone;
 public class EventHook {
   private String id;
   private String resourceType;
-  private String eventType;
+  private TypeEvent eventType;
   private String name;
   private String dateAdded;
   private String uri;
@@ -19,7 +19,8 @@ public class EventHook {
     this.dateAdded = getCurrentTime();
   }
 
-  public EventHook(String eventType, String id, String filename, Collection<String> notes, String uri) {
+  public EventHook(
+      TypeEvent eventType, String id, String filename, Collection<String> notes, String uri) {
     this.eventType = eventType;
     this.id = id;
     this.name = filename;
@@ -52,11 +53,11 @@ public class EventHook {
     this.resourceType = resourceType;
   }
 
-  public String getEventType() {
+  public TypeEvent getEventType() {
     return eventType;
   }
 
-  public void setEventType(String eventType) {
+  public void setEventType(TypeEvent eventType) {
     this.eventType = eventType;
   }
 

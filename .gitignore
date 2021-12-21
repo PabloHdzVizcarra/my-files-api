@@ -34,3 +34,4 @@ build/
 /src/main/resources/application.yml
 /src/main/resources/my-files.jks
 /src/main/resources/csv/*.csv
+test.markdown

@@ -189,11 +189,13 @@ public class FileServiceCSV implements FileService {
     MyFile file = getFileByIdFromRepository(id);
     deleteFileFromStorageServiceFiles(file);
     deleteFileFromRepositoryByFile(id, file);
-    createEventDeleteFile(id);
+
+    String fileName = file.getName();
+    createEventDeleteFile(id, fileName);
   }
 
-  private void createEventDeleteFile(String id) {
-    EventHook event = webHook.createDeleteEvent();
+  private void createEventDeleteFile(String id, String fileName) {
+    EventHook event = webHook.createDeleteEvent(id, fileName, List.of());
     webHook.sendEvent(event);
     logger.debug("new delete event is send, the resource that be deleted contains the id: {}", id);
   }

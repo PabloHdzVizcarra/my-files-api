@@ -10,6 +10,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 public class WebHook {
+  public static final String LOCAL_SERVER_PORT = "local.server.port";
   private final Publisher publisher;
   private final Environment environment;
 
@@ -36,7 +37,7 @@ public class WebHook {
     String host;
     try {
       host = Inet6Address.getLocalHost().getHostAddress();
-      String port = environment.getProperty("local.server.port");
+      String port = environment.getProperty(LOCAL_SERVER_PORT);
       return UriComponentsBuilder.newInstance()
           .scheme("http")
           .host(host + ":" + port)
@@ -49,8 +50,7 @@ public class WebHook {
     }
   }
 
-  public EventHook createDeleteEvent() {
-
-    return null;
+  public EventHook createDeleteEvent(String fileId, String filename, Collection<String> notes) {
+    return new EventHook(TypeEvent.DELETE, fileId, filename, notes, createUriToFile(fileId));
   }
 }

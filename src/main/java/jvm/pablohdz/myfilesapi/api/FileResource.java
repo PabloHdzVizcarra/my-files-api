@@ -90,6 +90,6 @@ public class FileResource {
   @DeleteMapping("/{id}")
   public ResponseEntity<String> delete(@PathVariable("id") String id) {
     fileService.deleteFile(id);
-    return ResponseEntity.ok("its work");
+    return ResponseEntity.ok("file deleted successfully");
   }
 }

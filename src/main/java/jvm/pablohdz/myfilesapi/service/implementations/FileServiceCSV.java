@@ -186,15 +186,29 @@ public class FileServiceCSV implements FileService {
 
   @Override
   public void deleteFile(String id) {
-    MyFile file = fileRepository.findById(id).orElseThrow(() -> new FileNotRegisterException(id));
-    String storageId = file.getStorageId();
-    fileStorageService.delete(storageId);
+    MyFile file = getFileByIdFromRepository(id);
+    deleteFileFromStorageServiceFiles(file);
+    deleteFileFromRepositoryByFile(id, file);
+    createEventDeleteFile(id);
+  }
 
-    fileRepository.delete(file);
-    logger.debug("the file entity with id: {} is deleted", id);
-
+  private void createEventDeleteFile(String id) {
     EventHook event = webHook.createDeleteEvent();
     webHook.sendEvent(event);
     logger.debug("new delete event is send, the resource that be deleted contains the id: {}", id);
+  }
+
+  private void deleteFileFromRepositoryByFile(String id, MyFile file) {
+    fileRepository.delete(file);
+    logger.debug("the file entity with id: {} is deleted", id);
+  }
+
+  private void deleteFileFromStorageServiceFiles(MyFile file) {
+    String storageId = file.getStorageId();
+    fileStorageService.delete(storageId);
+  }
+
+  private MyFile getFileByIdFromRepository(String id) {
+    return fileRepository.findById(id).orElseThrow(() -> new FileNotRegisterException(id));
   }
 }

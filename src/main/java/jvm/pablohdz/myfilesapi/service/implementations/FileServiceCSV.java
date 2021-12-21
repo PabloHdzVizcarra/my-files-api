@@ -9,13 +9,13 @@ import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
 import jvm.pablohdz.myfilesapi.entity.FileCSVData;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
-import jvm.pablohdz.myfilesapi.exception.FileCSVNotFoundException;
-import jvm.pablohdz.myfilesapi.mapper.CSVFileMapper;
+import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
+import jvm.pablohdz.myfilesapi.mapper.FileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
 import jvm.pablohdz.myfilesapi.service.AuthenticationService;
-import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
+import jvm.pablohdz.myfilesapi.service.FileStorageService;
 import jvm.pablohdz.myfilesapi.service.FileService;
 import jvm.pablohdz.myfilesapi.webhook.EventHook;
 import jvm.pablohdz.myfilesapi.webhook.WebHook;
@@ -29,24 +29,24 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileServiceCSV implements FileService {
-  private final CSVFileStorageService csvFileStorageService;
-  private final AuthenticationService authenticationService;
-  private final MyFileRepository myFileRepository;
-  private final CSVFileMapper csvFileMapper;
-  private final WebHook webHook;
   Logger logger = LoggerFactory.getLogger(FileServiceCSV.class);
+  private final FileStorageService fileStorageService;
+  private final AuthenticationService authenticationService;
+  private final MyFileRepository fileRepository;
+  private final FileMapper fileMapper;
+  private final WebHook webHook;
 
   @Autowired
   public FileServiceCSV(
-      CSVFileStorageService csvFileStorageService,
+      FileStorageService fileStorageService,
       AuthenticationService authenticationService,
       MyFileRepository myFileRepository,
-      CSVFileMapper csvFileMapper,
+      FileMapper fileMapper,
       WebHook webHook) {
-    this.csvFileStorageService = csvFileStorageService;
+    this.fileStorageService = fileStorageService;
     this.authenticationService = authenticationService;
-    this.myFileRepository = myFileRepository;
-    this.csvFileMapper = csvFileMapper;
+    this.fileRepository = myFileRepository;
+    this.fileMapper = fileMapper;
     this.webHook = webHook;
   }
 
@@ -58,12 +58,12 @@ public class FileServiceCSV implements FileService {
     verifyIfFileHasAlreadyRegistered(fileName);
 
     User currentUser = authenticationService.getCurrentUser();
-    String keyFile = csvFileStorageService.upload(bytes, fileName, currentUser.getUsername());
+    String keyFile = fileStorageService.upload(bytes, fileName, currentUser.getUsername());
     MyFile CSVFile = createFile(fileName, currentUser, keyFile);
-    MyFile fileSaved = myFileRepository.save(CSVFile);
+    MyFile fileSaved = fileRepository.save(CSVFile);
 
     sendAddedEvent(fileSaved);
-    return csvFileMapper.myFileToCSVFileDto(fileSaved);
+    return fileMapper.myFileToCSVFileDto(fileSaved);
   }
 
   /**
@@ -86,13 +86,13 @@ public class FileServiceCSV implements FileService {
     MyFile file = getFileFromRepository(id);
     String storageId = file.getStorageId();
     String fileName = file.getName();
-    InputStreamResource data = csvFileStorageService.getFile(storageId);
+    InputStreamResource data = fileStorageService.getFile(storageId);
     return new FileCSVData(fileName, data);
   }
 
   private MyFile getFileFromRepository(String id) {
-    Optional<MyFile> optionalMyFile = myFileRepository.findById(id);
-    return optionalMyFile.orElseThrow(() -> new FileCSVNotFoundException(id));
+    Optional<MyFile> optionalMyFile = fileRepository.findById(id);
+    return optionalMyFile.orElseThrow(() -> new FileNotRegisterException(id));
   }
 
   @Override
@@ -107,7 +107,7 @@ public class FileServiceCSV implements FileService {
     sendEventUpdateToWebHook(id, originalFilename);
 
     logger.info("new update event its created to file with id: {}", id);
-    return csvFileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
+    return fileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
   }
 
   private void sendEventUpdateToWebHook(String id, String originalFilename) {
@@ -118,13 +118,13 @@ public class FileServiceCSV implements FileService {
 
   private void updateFileInRepository(String originalFilename, MyFile foundFile) {
     foundFile.setName(originalFilename);
-    myFileRepository.save(foundFile);
+    fileRepository.save(foundFile);
   }
 
   private void updateFileInServerFiles(
       byte[] bytesFromMultipartFile, String originalFilename, MyFile foundFile) {
     String storageId = foundFile.getStorageId();
-    csvFileStorageService.update(storageId, bytesFromMultipartFile, originalFilename);
+    fileStorageService.update(storageId, bytesFromMultipartFile, originalFilename);
   }
 
   private byte[] getBytesFromMultipartFile(MultipartFile file) {
@@ -136,7 +136,7 @@ public class FileServiceCSV implements FileService {
   }
 
   private void verifyIfFileHasAlreadyRegistered(String filename) {
-    Optional<MyFile> optionalMyFile = myFileRepository.findByName(filename);
+    Optional<MyFile> optionalMyFile = fileRepository.findByName(filename);
     if (optionalMyFile.isPresent()) throw new CSVFileAlreadyRegisteredException(filename);
   }
 
@@ -177,10 +177,40 @@ public class FileServiceCSV implements FileService {
   @Transactional(readOnly = true)
   public Collection<CSVFileDto> getAllFilesByUserId(String userId) {
     User user = authenticationService.getCurrentUser();
-    Collection<MyFile> allFilesByUser = myFileRepository.findAllByUser(user);
+    Collection<MyFile> allFilesByUser = fileRepository.findAllByUser(user);
 
     return allFilesByUser.stream()
-        .map(csvFileMapper::toCSVFileDto)
+        .map(fileMapper::toCSVFileDto)
         .collect(Collectors.toUnmodifiableList());
+  }
+
+  @Override
+  public void deleteFile(String id) {
+    MyFile file = getFileByIdFromRepository(id);
+    deleteFileFromStorageServiceFiles(file);
+    deleteFileFromRepositoryByFile(id, file);
+
+    String fileName = file.getName();
+    createEventDeleteFile(id, fileName);
+  }
+
+  private void createEventDeleteFile(String id, String fileName) {
+    EventHook event = webHook.createDeleteEvent(id, fileName, List.of());
+    webHook.sendEvent(event);
+    logger.debug("new delete event is send, the resource that be deleted contains the id: {}", id);
+  }
+
+  private void deleteFileFromRepositoryByFile(String id, MyFile file) {
+    fileRepository.delete(file);
+    logger.debug("the file entity with id: {} is deleted", id);
+  }
+
+  private void deleteFileFromStorageServiceFiles(MyFile file) {
+    String storageId = file.getStorageId();
+    fileStorageService.delete(storageId);
+  }
+
+  private MyFile getFileByIdFromRepository(String id) {
+    return fileRepository.findById(id).orElseThrow(() -> new FileNotRegisterException(id));
   }
 }

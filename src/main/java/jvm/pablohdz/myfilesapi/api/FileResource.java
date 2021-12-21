@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,18 +30,18 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RestController
 @RequestMapping(value = "/api/files")
 public class FileResource {
-  private final FileService csvService;
+  private final FileService fileService;
   private final Environment environment;
 
   @Autowired
   public FileResource(FileService csvService, Environment environment) {
-    this.csvService = csvService;
+    this.fileService = csvService;
     this.environment = environment;
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<CSVFileDto> uploadCSVFile(@RequestParam("file") MultipartFile file) {
-    CSVFileDto dto = csvService.uploadFile(file);
+  public ResponseEntity<CSVFileDto> uploadFile(@RequestParam("file") MultipartFile file) {
+    CSVFileDto dto = fileService.uploadFile(file);
     URI uri =
         ServletUriComponentsBuilder.fromCurrentRequest()
             .path("/{id}")
@@ -51,7 +52,7 @@ public class FileResource {
 
   @GetMapping(value = "/{id}", produces = "text/csv")
   public ResponseEntity<InputStreamResource> readByID(@PathVariable("id") String id) {
-    FileCSVData fileCSVData = csvService.downloadById(id);
+    FileCSVData fileCSVData = fileService.downloadById(id);
     String csvFileName = fileCSVData.getFilename();
     InputStreamResource data = fileCSVData.getDataStreamResource();
 
@@ -65,7 +66,7 @@ public class FileResource {
   public ResponseEntity<byte[]> update(
       @PathVariable("id") String id, @RequestParam("file") MultipartFile file) throws IOException {
     String uri = createURICreated(id);
-    CSVFileDataDto data = csvService.update(id, file);
+    CSVFileDataDto data = fileService.update(id, file);
     HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + data.getFilename());
     httpHeaders.set(HttpHeaders.CONTENT_TYPE, data.getContentType());
@@ -84,5 +85,11 @@ public class FileResource {
         .path("/api/files/" + id)
         .build()
         .toString();
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<String> delete(@PathVariable("id") String id) {
+    fileService.deleteFile(id);
+    return ResponseEntity.ok("file deleted successfully");
   }
 }

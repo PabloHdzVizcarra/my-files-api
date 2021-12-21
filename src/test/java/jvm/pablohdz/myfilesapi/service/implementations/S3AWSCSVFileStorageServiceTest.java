@@ -7,9 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
+import jvm.pablohdz.myfilesapi.service.FileStorageService;
 import org.assertj.core.api.Assertions;
-import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -21,11 +20,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 @Disabled("Only run in host development")
 class S3AWSCSVFileStorageServiceTest {
-  private CSVFileStorageService csvFileStorageService;
+  private FileStorageService csvFileStorageService;
 
   @BeforeEach
   void setUp() {
-    csvFileStorageService = new S3AWSCSVFileStorageService();
+    csvFileStorageService = new S3AWSFileStorageService();
     ReflectionTestUtils.setField(csvFileStorageService, "bucketName", "my-files-storage");
     ReflectionTestUtils.setField(csvFileStorageService, "prefixKey", "my.files/");
   }

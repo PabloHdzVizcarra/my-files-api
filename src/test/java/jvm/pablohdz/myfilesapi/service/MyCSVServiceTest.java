@@ -31,7 +31,7 @@ import org.springframework.mock.web.MockMultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class MyCSVServiceTest {
-  public static final String FILE_ID = "correct-id-file";
+  public static final String FILE_ID = "file_jd782jrg-654hd";
   public static final String STORAGE_ID = "file_csv_id";
   public static final MyFile CSV_FILE = new MyFile(STORAGE_ID);
   public static final InputStreamResource FILE_INPUT_STREAM =
@@ -45,7 +45,8 @@ class MyCSVServiceTest {
   public static final String FILENAME = "example.csv";
   public static final MockMultipartFile MOCK_MULTIPART_FILE =
       new MockMultipartFile("test.csv", FILENAME, "csv", "example content".getBytes());
-  public static final MyFile FILE_ID_NAME = new MyFile("file_ad879d", "example.csv");
+  public static final MyFile FILE_ID_NAME =
+      new MyFile("file_ad879d", "example.csv", "s3/bucket/file_hjf83yh-as");
   public static final EventHook EVENT = new EventHook();
   private FileService csvService;
   @Mock CSVFileStorageService csvFileStorageService;
@@ -99,6 +100,16 @@ class MyCSVServiceTest {
     when(webHook.createAddEvent(any(), any(), any(), any())).thenReturn(EVENT);
 
     csvService.uploadFile(MOCK_MULTIPART_FILE);
+
+    Mockito.verify(webHook, times(1)).sendEvent(EVENT);
+  }
+
+  @Test
+  void whenUpdateFile_thenSendEvent() {
+    when(myFileRepository.findById(FILE_ID)).thenReturn(Optional.of(FILE_ID_NAME));
+    when(webHook.createUpdateEvent(any(), any(), any(), any())).thenReturn(EVENT);
+
+    csvService.update(FILE_ID, MOCK_MULTIPART_FILE);
 
     Mockito.verify(webHook, times(1)).sendEvent(EVENT);
   }

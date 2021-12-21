@@ -19,6 +19,8 @@ import jvm.pablohdz.myfilesapi.service.CSVFileStorageService;
 import jvm.pablohdz.myfilesapi.service.FileService;
 import jvm.pablohdz.myfilesapi.webhook.EventHook;
 import jvm.pablohdz.myfilesapi.webhook.WebHook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class FileServiceCSV implements FileService {
   private final MyFileRepository myFileRepository;
   private final CSVFileMapper csvFileMapper;
   private final WebHook webHook;
+  Logger logger = LoggerFactory.getLogger(FileServiceCSV.class);
 
   @Autowired
   public FileServiceCSV(
@@ -103,6 +106,13 @@ public class FileServiceCSV implements FileService {
     csvFileStorageService.update(storageId, bytesFromMultipartFile, originalFilename);
     foundFile.setName(originalFilename);
     myFileRepository.save(foundFile);
+
+    EventHook updateEvent =
+        webHook.createUpdateEvent(
+            id, originalFilename, List.of(), "http://localhost:8080/api/files/" + id);
+
+    webHook.sendEvent(updateEvent);
+    logger.info("new update event its created to file with id: {}", id);
     return csvFileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
   }
 

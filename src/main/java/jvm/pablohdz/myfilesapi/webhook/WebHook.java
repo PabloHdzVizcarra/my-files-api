@@ -22,4 +22,9 @@ public class WebHook {
   public void sendEvent(EventHook event) {
     publisher.publish(event);
   }
+
+  public EventHook createUpdateEvent(
+      String fileId, String filename, Collection<String> notes, String uri) {
+    return new EventHook("update", fileId, filename, notes, uri);
+  }
 }

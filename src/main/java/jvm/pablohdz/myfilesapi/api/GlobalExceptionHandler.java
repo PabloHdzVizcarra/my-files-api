@@ -1,7 +1,12 @@
 package jvm.pablohdz.myfilesapi.api;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+import jvm.pablohdz.myfilesapi.dto.ErrorResponseBuilder;
 import jvm.pablohdz.myfilesapi.dto.ErrorStandardResponse;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
+import jvm.pablohdz.myfilesapi.exception.FileInvalidExtension;
 import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,5 +65,29 @@ public class GlobalExceptionHandler {
     errorStandardResponse.setParam(List.of(errors));
 
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorStandardResponse);
+  }
+
+  @ExceptionHandler(FileInvalidExtension.class)
+  public ResponseEntity<ErrorResponseBuilder> handleFileInvalidExtension(
+      FileInvalidExtension exception) {
+    Map<String, List<String>> errors = new HashMap<>();
+    errors.put("file", List.of(exception.getMessage()));
+    ErrorResponseBuilder errorResponse =
+        ErrorResponseBuilder.builder()
+            .message("You try upload a file with an invalid extension")
+            .code("file_extension_invalid")
+            .type("invalid_request_error")
+            .timestamp(getCurrentTime())
+            .param(List.of(errors))
+            .build();
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+  }
+
+  private String getCurrentTime() {
+    TimeZone timeZone = TimeZone.getDefault();
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+    dateFormat.setTimeZone(timeZone);
+    return dateFormat.format(new Date());
   }
 }

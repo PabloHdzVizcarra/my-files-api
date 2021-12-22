@@ -6,6 +6,6 @@ public class FileInvalidExtension extends RuntimeException {
     super(
         "The file with name: "
             + filename
-            + "isn't valid, only can upload a files with extension .csv");
+            + " isn't valid, only can upload a files with extension .csv");
   }
 }

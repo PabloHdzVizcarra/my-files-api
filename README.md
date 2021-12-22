@@ -73,7 +73,7 @@ This API was designed trying following REST principles.
 The next image is a basic design for this API.
 ![System Design_ My Files API](https://user-images.githubusercontent.com/55292284/147143280-5e868ef3-d9f5-4ee5-bc9f-3e01ecd6dbf6.jpg)
 
-[API Specification](API Technical Specification MyFiles)
+[API Specification](https://github.com/PabloHdzVizcarra/my-files-api.wiki.git)
 ## API Endpoints
 
 ## API Errors

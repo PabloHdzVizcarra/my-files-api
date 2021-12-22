@@ -1,5 +1,9 @@
 package jvm.pablohdz.myfilesapi.api;
 
+import static jvm.pablohdz.myfilesapi.api.ErrorCode.FILE_EXTENSION_INVALID;
+import static jvm.pablohdz.myfilesapi.api.ErrorCode.FILE_ID_INVALID;
+import static jvm.pablohdz.myfilesapi.api.ErrorCode.WEBHOOK_ERROR;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -30,7 +34,6 @@ public class GlobalExceptionHandler {
     String errorMessage = exception.getMessage();
     Map<String, List<String>> errors = new HashMap<>();
     errors.put("user", List.of(errorMessage));
-
     ErrorResponse errorResponse =
         new ErrorResponse(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST, "", errors);
 
@@ -54,18 +57,21 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(FileNotRegisterException.class)
-  public ResponseEntity<ErrorStandardResponse> handleFileCSVNotFoundException(
+  public ResponseEntity<ErrorResponseBuilder> handleFileCSVNotFoundException(
       FileNotRegisterException exception) {
-    String errorMessage = exception.getMessage();
-    ErrorStandardResponse errorStandardResponse = new ErrorStandardResponse();
-    errorStandardResponse.setCode("file_invalid_id");
-    errorStandardResponse.setType("invalid_request_error");
-    errorStandardResponse.setMessage("You are trying to find a file, with a file id invalid");
-    Map<String, List<String>> errors = new HashMap<>();
-    errors.put("file", List.of(errorMessage));
-    errorStandardResponse.setParam(List.of(errors));
 
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorStandardResponse);
+    Map<String, List<String>> errors = new HashMap<>();
+    errors.put("id", List.of(exception.getMessage()));
+    ErrorResponseBuilder responseBuilder =
+        ErrorResponseBuilder.builder()
+            .message("you try found a file with invalid file id")
+            .code(FILE_ID_INVALID)
+            .type("invalid_request_error")
+            .timestamp(getCurrentTime())
+            .param(errors)
+            .build();
+
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBuilder);
   }
 
   @ExceptionHandler(FileInvalidExtension.class)
@@ -76,10 +82,10 @@ public class GlobalExceptionHandler {
     ErrorResponseBuilder errorResponse =
         ErrorResponseBuilder.builder()
             .message("You try upload a file with an invalid extension")
-            .code("file_extension_invalid")
+            .code(FILE_EXTENSION_INVALID)
             .type("invalid_request_error")
             .timestamp(getCurrentTime())
-            .param(List.of(errors))
+            .param(errors)
             .build();
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -92,10 +98,10 @@ public class GlobalExceptionHandler {
     ErrorResponseBuilder errorResponse =
         ErrorResponseBuilder.builder()
             .message("An error occurred with the execution of webhook")
-            .code("webhook_error")
+            .code(WEBHOOK_ERROR)
             .type("api_error")
             .timestamp(getCurrentTime())
-            .param(List.of(errors))
+            .param(errors)
             .build();
 
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);

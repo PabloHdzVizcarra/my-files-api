@@ -2,6 +2,7 @@ package jvm.pablohdz.myfilesapi.dto;
 
 import java.util.List;
 import java.util.Map;
+import jvm.pablohdz.myfilesapi.api.ErrorCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
@@ -11,8 +12,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class ErrorResponseBuilder {
   private String type;
-  private String code;
+  private ErrorCode code;
   private String message;
-  private List<Map<String, List<String>>> param;
+  private Map<String, List<String>> param;
   private String timestamp;
 }

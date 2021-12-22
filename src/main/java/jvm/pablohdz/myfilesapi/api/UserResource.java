@@ -36,14 +36,14 @@ public class UserResource {
       value = "/users",
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> create(@Valid @RequestBody UserRequest userRequest) {
+  public ResponseEntity<String> signUp(@Valid @RequestBody UserRequest userRequest) {
     userService.create(userRequest);
     URI location = URI.create("/api/users" + userRequest.getUsername());
     return ResponseEntity.created(location).build();
   }
 
   @GetMapping(value = "/user/{userId}/files", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Collection<FileDto>> getAllFiles(@PathVariable("userId") String userId) {
+  public ResponseEntity<Collection<FileDto>> getFiles(@PathVariable("userId") String userId) {
     Collection<FileDto> collectionDto = csvService.getFiles(userId);
     return ResponseEntity.ok(collectionDto);
   }

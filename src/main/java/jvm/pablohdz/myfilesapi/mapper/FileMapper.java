@@ -13,16 +13,16 @@ import org.mapstruct.Mapping;
 public interface FileMapper {
 
   @Mapping(target = "createdAt", expression = "java(dateISOFormat(file.getCreatedAt()))")
-  FileDto myFileToCSVFileDto(MyFile file);
+  FileDto fileToFileDto(MyFile file);
 
   @Mapping(target = "createdAt", expression = "java(dateISOFormat(file.getCreatedAt()))")
   @Mapping(target = "updateAt", expression = "java(dateISOFormat(file.getUpdateAt()))")
-  FileDto toCSVFileDto(MyFile file);
+  FileDto toFileDto(MyFile file);
 
   @Mapping(target = "filename", source = "filename")
   @Mapping(target = "contentType", source = "contentType")
   @Mapping(target = "data", source = "bytes")
-  CSVFileDataDto toCSVFileDataDto(String filename, String contentType, byte[] bytes);
+  CSVFileDataDto toFileDataDto(String filename, String contentType, byte[] bytes);
 
   default String dateISOFormat(Long date) {
     TimeZone timeZone = TimeZone.getDefault();

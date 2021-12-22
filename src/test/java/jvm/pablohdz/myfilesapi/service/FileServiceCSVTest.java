@@ -93,7 +93,7 @@ class FileServiceCSVTest {
   void givenValidId_whenGetAllFilesByUserId_thenReturnCollectionOfFiles() {
     when(authenticationService.getCurrentUser()).thenReturn(USER);
     when(fileRepository.findAllByUser(USER)).thenReturn(List.of(FILE_EMPTY, FILE_EMPTY));
-    when(fileMapper.toCSVFileDto(FILE_EMPTY)).thenReturn(FILE_DTO);
+    when(fileMapper.fileToFileDto(FILE_EMPTY)).thenReturn(FILE_DTO);
 
     Collection<FileDto> collection = underTest.getFiles(USER_ID);
 

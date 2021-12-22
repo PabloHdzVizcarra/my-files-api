@@ -30,6 +30,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileServiceCSV implements FileService {
+
+  public static final String CORRECT_FORMAT = ".csv";
   Logger logger = LoggerFactory.getLogger(FileServiceCSV.class);
   private final FileStorageService fileStorageService;
   private final AuthenticationService authenticationService;
@@ -54,23 +56,36 @@ public class FileServiceCSV implements FileService {
   @Override
   @Transactional
   public FileDto upload(MultipartFile file) {
-    String originalFilename = file.getOriginalFilename();
-
-    if (originalFilename != null && !originalFilename.endsWith(".csv")) {
-      throw new FileInvalidExtension(originalFilename);
-    }
-
+    verifyExtensionFile(file);
     byte[] bytes = parseMultipartFileToBytes(file);
     String fileName = getFileName(file);
     verifyIfFileHasAlreadyRegistered(fileName);
 
     User currentUser = authenticationService.getCurrentUser();
     String keyFile = fileStorageService.upload(bytes, fileName, currentUser.getUsername());
-    MyFile CSVFile = createFile(fileName, currentUser, keyFile);
-    MyFile fileSaved = fileRepository.save(CSVFile);
+    MyFile fileToSave = createFile(fileName, currentUser, keyFile);
+    MyFile fileSaved = fileRepository.save(fileToSave);
 
     sendAddedEvent(fileSaved);
-    return fileMapper.myFileToCSVFileDto(fileSaved);
+    return fileMapper.fileToFileDto(fileSaved);
+  }
+
+  /**
+   * Verify if the current format of the file is equals to .csv, the application only have the
+   * functionality to handle files with format CSV
+   *
+   * @param file data of the file
+   */
+  private void verifyExtensionFile(MultipartFile file) {
+    String originalFilename = file.getOriginalFilename();
+    if (isNotValidExtensionFile(originalFilename)) {
+      logger.debug("An attempt is made to save a file with an invalid extension");
+      throw new FileInvalidExtension(originalFilename);
+    }
+  }
+
+  private boolean isNotValidExtensionFile(String originalFilename) {
+    return originalFilename == null || !originalFilename.endsWith(CORRECT_FORMAT);
   }
 
   /**
@@ -126,7 +141,7 @@ public class FileServiceCSV implements FileService {
     sendEventUpdateToWebHook(id, originalFilename);
 
     logger.info("new update event its created to file with id: {}", id);
-    return fileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
+    return fileMapper.toFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
   }
 
   private void sendEventUpdateToWebHook(String id, String originalFilename) {
@@ -199,7 +214,7 @@ public class FileServiceCSV implements FileService {
     Collection<MyFile> allFilesByUser = fileRepository.findAllByUser(user);
 
     return allFilesByUser.stream()
-        .map(fileMapper::toCSVFileDto)
+        .map(fileMapper::fileToFileDto)
         .collect(Collectors.toUnmodifiableList());
   }
 

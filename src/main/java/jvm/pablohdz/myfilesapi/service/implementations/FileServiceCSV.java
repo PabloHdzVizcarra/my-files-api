@@ -88,12 +88,15 @@ public class FileServiceCSV implements FileService {
     String fileName = file.getName();
     ByteArrayResource data = fileStorageService.getFile(storageId);
 
-    sendDownloadEvent(id, fileName);
+    sendDownloadEvent(file);
 
     return new FileServiceDataResponse(fileName, data);
   }
 
-  private void sendDownloadEvent(String id, String fileName) {
+  private void sendDownloadEvent(MyFile file) {
+    String id = file.getId();
+    String fileName = file.getName();
+
     EventHook event = webHook.createDownloadEvent(id, fileName, List.of());
     webHook.sendEvent(event);
     logger.info("download event is sending, the file with the id: {} it was downloaded", id);

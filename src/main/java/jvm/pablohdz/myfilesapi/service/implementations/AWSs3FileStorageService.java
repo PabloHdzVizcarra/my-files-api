@@ -22,6 +22,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
 @Service
@@ -49,7 +50,7 @@ public class AWSs3FileStorageService implements FileStorageService {
   }
 
   @Override
-  public @Nullable ByteArrayResource getFile(String storageId) {
+  public ByteArrayResource getFile(String storageId) {
     S3Client s3Client = createS3Client();
     GetObjectRequest getObjectRequest =
         GetObjectRequest.builder().bucket(bucketName).key(storageId).build();
@@ -58,10 +59,9 @@ public class AWSs3FileStorageService implements FileStorageService {
     try {
       byte[] bytesFile = s3ClientObject.readAllBytes();
       return new ByteArrayResource(bytesFile);
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (IOException | S3Exception exception) {
+      throw new IllegalStateException(exception.getMessage());
     }
-    return null;
   }
 
   @Override

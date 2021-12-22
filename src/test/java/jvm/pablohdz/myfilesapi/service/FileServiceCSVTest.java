@@ -7,7 +7,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +29,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -39,8 +37,6 @@ class FileServiceCSVTest {
   public static final String FILE_ID = "file_jd782jrg-654hd";
   public static final String STORAGE_ID = "file_csv_id";
   public static final MyFile CSV_FILE = new MyFile(STORAGE_ID);
-  public static final InputStreamResource FILE_INPUT_STREAM =
-      new InputStreamResource(new ByteArrayInputStream("data".getBytes()));
   public static final ByteArrayResource RESOURCE_CSV =
       new ByteArrayResource("example data".getBytes());
   private static final String WRONG_FILE_ID = "invalid-id";
@@ -106,7 +102,7 @@ class FileServiceCSVTest {
     when(fileRepository.findByName(FILENAME)).thenReturn(Optional.empty());
     when(authenticationService.getCurrentUser()).thenReturn(USER);
     when(fileRepository.save(any())).thenReturn(FILE_ID_NAME);
-    when(webHook.createAddEvent(any(), any(), any(), any())).thenReturn(EVENT);
+    when(webHook.createAddEvent(any(), any(), any())).thenReturn(EVENT);
 
     underTest.upload(MOCK_MULTIPART_FILE);
 

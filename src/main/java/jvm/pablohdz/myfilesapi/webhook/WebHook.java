@@ -22,8 +22,8 @@ public class WebHook {
   }
 
   public EventHook createAddEvent(
-      String id, String filename, Collection<String> notes, String uri) {
-    return new EventHook(TypeEvent.ADDED, id, filename, notes, uri);
+      String id, String filename, Collection<String> notes) {
+    return new EventHook(TypeEvent.FILE_ADDED, id, filename, notes, createUriToFile(id));
   }
 
   public void sendEvent(EventHook event) throws EventPublisherException {
@@ -31,7 +31,7 @@ public class WebHook {
   }
 
   public EventHook createUpdateEvent(String fileId, String filename, Collection<String> notes) {
-    return new EventHook(TypeEvent.UPDATE, fileId, filename, notes, createUriToFile(fileId));
+    return new EventHook(TypeEvent.FILE_UPDATE, fileId, filename, notes, createUriToFile(fileId));
   }
 
   private String createUriToFile(String id) {
@@ -51,10 +51,10 @@ public class WebHook {
   }
 
   public EventHook createDeleteEvent(String fileId, String filename, Collection<String> notes) {
-    return new EventHook(TypeEvent.DELETE, fileId, filename, notes, createUriToFile(fileId));
+    return new EventHook(TypeEvent.FILE_DELETE, fileId, filename, notes, createUriToFile(fileId));
   }
 
   public EventHook createDownloadEvent(String fileId, String filename, List<String> notes) {
-    return new EventHook(TypeEvent.DELETE, fileId, filename, notes, createUriToFile(fileId));
+    return new EventHook(TypeEvent.FILE_DOWNLOAD, fileId, filename, notes, createUriToFile(fileId));
   }
 }

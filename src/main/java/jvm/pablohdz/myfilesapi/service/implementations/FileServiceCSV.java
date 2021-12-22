@@ -100,8 +100,8 @@ public class FileServiceCSV implements FileService {
         webHook.createAddEvent(
             fileSaved.getId(),
             fileSaved.getName(),
-            List.of(),
-            "http://localhost:8080/api/files/" + fileSaved.getId());
+            List.of()
+        );
     publishEventInHook(addEvent);
   }
 

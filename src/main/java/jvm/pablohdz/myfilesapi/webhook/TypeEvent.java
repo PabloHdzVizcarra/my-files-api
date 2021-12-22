@@ -1,9 +1,10 @@
 package jvm.pablohdz.myfilesapi.webhook;
 
 public enum TypeEvent {
-  ADDED("added"),
-  UPDATE("update"),
-  DELETE("delete");
+  FILE_ADDED("added"),
+  FILE_UPDATE("update"),
+  FILE_DELETE("delete"),
+  FILE_DOWNLOAD("file_download");
 
   private final String type;
 

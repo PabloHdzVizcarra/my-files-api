@@ -73,13 +73,39 @@ This API was designed trying following REST principles.
 The next image is a basic design for this API.
 ![System Design_ My Files API](https://user-images.githubusercontent.com/55292284/147143280-5e868ef3-d9f5-4ee5-bc9f-3e01ecd6dbf6.jpg)
 
+The next link is the API Specification for this API.
+
 [API Specification](https://github.com/PabloHdzVizcarra/my-files-api/wiki/API-Technical-Specification-MyFiles)
+
 ## API Endpoints
+
+The API have the functionalities of CRUD operations in the next link contains the all endpoints with
+some examples:
+
+[End Points](https://github.com/PabloHdzVizcarra/my-files-api/wiki/Endpoints-Page)
 
 ## API Errors
 
+The API has a specified behavior to handle the errors. The next page contains details about how to
+handle errors.
+
+[Error Page](https://github.com/PabloHdzVizcarra/my-files-api/wiki/Error-Page)
+
 ## GitHub Actions
 
+**Java Continuous Integration** GitHub Action name
+
+This project has Continuous Delivery (CI) through a GitHub Action, this action simply runs the test
+and makes sure that the test always pass.
+
+The GitHub Action **Java Continuous Integration** will be triggered every time a pull request is
+made to the main branch of the project.
+
 ## WebHook
+
+This API contains a basic webhook which send events, when a file that was tracking is modified. You
+can see the webhook specification here:
+
+[WebHook](https://github.com/PabloHdzVizcarra/my-files-api/wiki/WebHook-Events)
 
 Made with love by Pablo Hernandez

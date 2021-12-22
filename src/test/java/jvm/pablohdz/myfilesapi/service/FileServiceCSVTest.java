@@ -21,6 +21,7 @@ import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
 import jvm.pablohdz.myfilesapi.service.implementations.FileServiceCSV;
 import jvm.pablohdz.myfilesapi.webhook.EventHook;
+import jvm.pablohdz.myfilesapi.webhook.EventPublisherException;
 import jvm.pablohdz.myfilesapi.webhook.WebHook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,7 +102,7 @@ class FileServiceCSVTest {
   }
 
   @Test
-  void whenUploadFile_thenSendEvent() {
+  void whenUploadFile_thenSendEvent() throws EventPublisherException {
     when(fileRepository.findByName(FILENAME)).thenReturn(Optional.empty());
     when(authenticationService.getCurrentUser()).thenReturn(USER);
     when(fileRepository.save(any())).thenReturn(FILE_ID_NAME);
@@ -113,7 +114,7 @@ class FileServiceCSVTest {
   }
 
   @Test
-  void whenUpdateFile_thenSendEvent() {
+  void whenUpdateFile_thenSendEvent() throws EventPublisherException {
     when(fileRepository.findById(FILE_ID)).thenReturn(Optional.of(FILE_ID_NAME));
     when(webHook.createUpdateEvent(any(), any(), any())).thenReturn(EVENT);
 
@@ -130,7 +131,7 @@ class FileServiceCSVTest {
   }
 
   @Test
-  void givenValidId_whenDownloadFile_thenSendDownloadEvent() {
+  void givenValidId_whenDownloadFile_thenSendDownloadEvent() throws EventPublisherException {
     when(fileRepository.findById(FILE_ID)).thenReturn(Optional.of(FILE_ID_NAME));
     when(fileStorageService.getFile(FILE_ID_NAME.getStorageId())).thenReturn(RESOURCE_CSV);
 

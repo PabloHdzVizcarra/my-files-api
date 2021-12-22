@@ -11,6 +11,7 @@ import jvm.pablohdz.myfilesapi.dto.FileServiceDataResponse;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
 import jvm.pablohdz.myfilesapi.exception.FileInvalidExtension;
 import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
+import jvm.pablohdz.myfilesapi.exception.WebHookException;
 import jvm.pablohdz.myfilesapi.mapper.FileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
@@ -19,6 +20,7 @@ import jvm.pablohdz.myfilesapi.service.AuthenticationService;
 import jvm.pablohdz.myfilesapi.service.FileStorageService;
 import jvm.pablohdz.myfilesapi.service.FileService;
 import jvm.pablohdz.myfilesapi.webhook.EventHook;
+import jvm.pablohdz.myfilesapi.webhook.EventPublisherException;
 import jvm.pablohdz.myfilesapi.webhook.WebHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +102,15 @@ public class FileServiceCSV implements FileService {
             fileSaved.getName(),
             List.of(),
             "http://localhost:8080/api/files/" + fileSaved.getId());
-    webHook.sendEvent(addEvent);
+    publishEventInHook(addEvent);
+  }
+
+  private void publishEventInHook(EventHook event) {
+    try {
+      webHook.sendEvent(event);
+    } catch (EventPublisherException e) {
+      throw new WebHookException(e.getMessage());
+    }
   }
 
   @Override
@@ -120,7 +130,7 @@ public class FileServiceCSV implements FileService {
     String fileName = file.getName();
 
     EventHook event = webHook.createDownloadEvent(id, fileName, List.of());
-    webHook.sendEvent(event);
+    publishEventInHook(event);
     logger.info("download event is sending, the file with the id: {} it was downloaded", id);
   }
 
@@ -147,7 +157,7 @@ public class FileServiceCSV implements FileService {
   private void sendEventUpdateToWebHook(String id, String originalFilename) {
     EventHook updateEvent = webHook.createUpdateEvent(id, originalFilename, List.of());
 
-    webHook.sendEvent(updateEvent);
+    publishEventInHook(updateEvent);
   }
 
   private void updateFileInRepository(String originalFilename, MyFile foundFile) {
@@ -230,7 +240,7 @@ public class FileServiceCSV implements FileService {
 
   private void createEventDeleteFile(String id, String fileName) {
     EventHook event = webHook.createDeleteEvent(id, fileName, List.of());
-    webHook.sendEvent(event);
+    publishEventInHook(event);
     logger.debug("new delete event is send, the resource that be deleted contains the id: {}", id);
   }
 

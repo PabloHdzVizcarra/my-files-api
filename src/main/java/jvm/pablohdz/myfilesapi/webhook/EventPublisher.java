@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Component
@@ -19,18 +20,26 @@ public class EventPublisher implements Publisher {
   public EventPublisher() {}
 
   @Override
-  public void publish(EventHook event) {
+  public void publish(EventHook event) throws EventPublisherException {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
     HttpEntity<EventHook> requestBody = new HttpEntity<>(event, headers);
     RestTemplate restTemplate = new RestTemplate();
-    ResponseEntity<String> response =
-        restTemplate.exchange(triggeredUrl, HttpMethod.POST, requestBody, String.class);
-    HttpStatus statusCode = response.getStatusCode();
-    if (!statusCode.is2xxSuccessful()) {
-      throw new IllegalStateException("error in the hook server");
+
+    try {
+      ResponseEntity<String> response =
+          restTemplate.exchange(triggeredUrl, HttpMethod.POST, requestBody, String.class);
+      HttpStatus statusCode = response.getStatusCode();
+
+      if (!statusCode.is2xxSuccessful()) {
+        throw new RuntimeException("error in the hook server");
+      }
+
+    } catch (RestClientException | IllegalStateException exception) {
+      exception.printStackTrace();
+      throw new EventPublisherException(exception.getMessage());
     }
   }
 }

@@ -8,6 +8,7 @@ import jvm.pablohdz.myfilesapi.dto.ErrorStandardResponse;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
 import jvm.pablohdz.myfilesapi.exception.FileInvalidExtension;
 import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
+import jvm.pablohdz.myfilesapi.exception.WebHookException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -82,6 +83,22 @@ public class GlobalExceptionHandler {
             .build();
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+  }
+
+  @ExceptionHandler(WebHookException.class)
+  public ResponseEntity<ErrorResponseBuilder> handleWebHookException(WebHookException exception) {
+    Map<String, List<String>> errors = new HashMap<>();
+    errors.put("file", List.of(exception.getMessage()));
+    ErrorResponseBuilder errorResponse =
+        ErrorResponseBuilder.builder()
+            .message("An error occurred with the execution of webhook")
+            .code("webhook_error")
+            .type("api_error")
+            .timestamp(getCurrentTime())
+            .param(List.of(errors))
+            .build();
+
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
   }
 
   private String getCurrentTime() {

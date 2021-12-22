@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 import jvm.pablohdz.myfilesapi.dto.ErrorResponseBuilder;
-import jvm.pablohdz.myfilesapi.dto.ErrorStandardResponse;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
 import jvm.pablohdz.myfilesapi.exception.FileInvalidExtension;
 import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
@@ -41,19 +40,21 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(CSVFileAlreadyRegisteredException.class)
-  public ResponseEntity<ErrorStandardResponse> handleCSVFileAlreadyRegisteredException(
+  public ResponseEntity<ErrorResponseBuilder> handleCSVFileAlreadyRegisteredException(
       CSVFileAlreadyRegisteredException exception) {
-    String errorMessage = exception.getMessage();
-    ErrorStandardResponse errorStandardResponse = new ErrorStandardResponse();
-    errorStandardResponse.setCode("file_already_registered");
-    errorStandardResponse.setType("entity_error");
-    errorStandardResponse.setMessage(
-        "you try save a file already been registered, you can change the file or change the name of the file");
     Map<String, List<String>> errors = new HashMap<>();
-    errors.put("file", List.of(errorMessage));
-    errorStandardResponse.setParam(List.of(errors));
+    errors.put("file", List.of(exception.getMessage(), "you can change the name of the file"));
 
-    return ResponseEntity.status(HttpStatus.CONFLICT).body(errorStandardResponse);
+    ErrorResponseBuilder response =
+        ErrorResponseBuilder.builder()
+            .code(ErrorCode.FILE_ALREADY_REGISTERED)
+            .type(ErrorType.ENTITY_ERROR)
+            .message("you are trying to save a file already registered")
+            .timestamp(getCurrentTime())
+            .param(errors)
+            .build();
+
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
   }
 
   @ExceptionHandler(FileNotRegisterException.class)
@@ -66,7 +67,7 @@ public class GlobalExceptionHandler {
         ErrorResponseBuilder.builder()
             .message("you try found a file with invalid file id")
             .code(FILE_ID_INVALID)
-            .type("invalid_request_error")
+            .type(ErrorType.INVALID_REQUEST_ERROR)
             .timestamp(getCurrentTime())
             .param(errors)
             .build();
@@ -83,7 +84,7 @@ public class GlobalExceptionHandler {
         ErrorResponseBuilder.builder()
             .message("You try upload a file with an invalid extension")
             .code(FILE_EXTENSION_INVALID)
-            .type("invalid_request_error")
+            .type(ErrorType.INVALID_REQUEST_ERROR)
             .timestamp(getCurrentTime())
             .param(errors)
             .build();
@@ -99,7 +100,7 @@ public class GlobalExceptionHandler {
         ErrorResponseBuilder.builder()
             .message("An error occurred with the execution of webhook")
             .code(WEBHOOK_ERROR)
-            .type("api_error")
+            .type(ErrorType.API_ERROR)
             .timestamp(getCurrentTime())
             .param(errors)
             .build();

@@ -1,5 +1,10 @@
 # My Files API
 
+This API is start following the idea of the book Designing Web Apis.
+
+The idea of this project is make an application with which any developer can make a UI application for
+handle the files storage.
+
 ## Run Project
 
 This project uses maven to run as it, is a spring application you can run the project with the

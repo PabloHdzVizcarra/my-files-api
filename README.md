@@ -2,8 +2,8 @@
 
 This API is start following the idea of the book Designing Web Apis.
 
-The idea of this project is make an application with which any developer can make a UI application for
-handle the files storage.
+The idea of this project is make an application with which any developer can make a UI application
+for handle the file's storage.
 
 ## Run Project
 

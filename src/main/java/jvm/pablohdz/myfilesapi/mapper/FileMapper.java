@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
-import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
+import jvm.pablohdz.myfilesapi.dto.FileDto;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,11 +13,11 @@ import org.mapstruct.Mapping;
 public interface FileMapper {
 
   @Mapping(target = "createdAt", expression = "java(dateISOFormat(file.getCreatedAt()))")
-  CSVFileDto myFileToCSVFileDto(MyFile file);
+  FileDto myFileToCSVFileDto(MyFile file);
 
   @Mapping(target = "createdAt", expression = "java(dateISOFormat(file.getCreatedAt()))")
   @Mapping(target = "updateAt", expression = "java(dateISOFormat(file.getUpdateAt()))")
-  CSVFileDto toCSVFileDto(MyFile file);
+  FileDto toCSVFileDto(MyFile file);
 
   @Mapping(target = "filename", source = "filename")
   @Mapping(target = "contentType", source = "contentType")

@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
-import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
+import jvm.pablohdz.myfilesapi.dto.FileDto;
 import jvm.pablohdz.myfilesapi.dto.FileServiceDataResponse;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
+import jvm.pablohdz.myfilesapi.exception.FileInvalidExtension;
 import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
 import jvm.pablohdz.myfilesapi.mapper.FileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
@@ -52,7 +53,13 @@ public class FileServiceCSV implements FileService {
 
   @Override
   @Transactional
-  public CSVFileDto uploadFile(MultipartFile file) {
+  public FileDto upload(MultipartFile file) {
+    String originalFilename = file.getOriginalFilename();
+
+    if (originalFilename != null && !originalFilename.endsWith(".csv")) {
+      throw new FileInvalidExtension(originalFilename);
+    }
+
     byte[] bytes = parseMultipartFileToBytes(file);
     String fileName = getFileName(file);
     verifyIfFileHasAlreadyRegistered(fileName);
@@ -187,7 +194,7 @@ public class FileServiceCSV implements FileService {
 
   @Override
   @Transactional(readOnly = true)
-  public Collection<CSVFileDto> getAllFilesByUserId(String userId) {
+  public Collection<FileDto> getFiles(String userId) {
     User user = authenticationService.getCurrentUser();
     Collection<MyFile> allFilesByUser = fileRepository.findAllByUser(user);
 
@@ -197,7 +204,7 @@ public class FileServiceCSV implements FileService {
   }
 
   @Override
-  public void deleteFile(String id) {
+  public void delete(String id) {
     MyFile file = getFileByIdFromRepository(id);
     deleteFileFromStorageServiceFiles(file);
     deleteFileFromRepositoryByFile(id, file);

@@ -1,7 +1,7 @@
 package jvm.pablohdz.myfilesapi.api;
 
 import java.util.Collection;
-import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
+import jvm.pablohdz.myfilesapi.dto.FileDto;
 import jvm.pablohdz.myfilesapi.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -43,8 +43,8 @@ public class UserResource {
   }
 
   @GetMapping(value = "/user/{userId}/files", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Collection<CSVFileDto>> getAllFiles(@PathVariable("userId") String userId) {
-    Collection<CSVFileDto> collectionDto = csvService.getAllFilesByUserId(userId);
+  public ResponseEntity<Collection<FileDto>> getAllFiles(@PathVariable("userId") String userId) {
+    Collection<FileDto> collectionDto = csvService.getFiles(userId);
     return ResponseEntity.ok(collectionDto);
   }
 }

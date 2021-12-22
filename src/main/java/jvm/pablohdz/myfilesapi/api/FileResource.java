@@ -6,11 +6,13 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
-import jvm.pablohdz.myfilesapi.entity.FileCSVData;
+import jvm.pablohdz.myfilesapi.dto.FileServiceDataResponse;
 import jvm.pablohdz.myfilesapi.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,7 +42,7 @@ public class FileResource {
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<CSVFileDto> uploadFile(@RequestParam("file") MultipartFile file) {
+  public ResponseEntity<CSVFileDto> upload(@RequestParam("file") MultipartFile file) {
     CSVFileDto dto = fileService.uploadFile(file);
     URI uri =
         ServletUriComponentsBuilder.fromCurrentRequest()
@@ -51,15 +53,15 @@ public class FileResource {
   }
 
   @GetMapping(value = "/{id}", produces = "text/csv")
-  public ResponseEntity<InputStreamResource> readByID(@PathVariable("id") String id) {
-    FileCSVData fileCSVData = fileService.downloadById(id);
-    String csvFileName = fileCSVData.getFilename();
-    InputStreamResource data = fileCSVData.getDataStreamResource();
+  public ResponseEntity<Resource> download(@PathVariable("id") String id) {
+    FileServiceDataResponse file = fileService.download(id);
+    String filename = file.getFilename();
+    ByteArrayResource resource = file.getResource();
 
     HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + csvFileName);
+    httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
     httpHeaders.set(HttpHeaders.CONTENT_TYPE, "text/csv");
-    return new ResponseEntity<>(data, httpHeaders, HttpStatus.OK);
+    return new ResponseEntity<>(resource, httpHeaders, HttpStatus.OK);
   }
 
   @PutMapping(value = "/{id}", produces = "text/csv")

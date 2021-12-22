@@ -1,6 +1,5 @@
 package jvm.pablohdz.myfilesapi.service.implementations;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +8,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import jvm.pablohdz.myfilesapi.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -18,16 +17,16 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
 @Service
-public class S3AWSFileStorageService implements FileStorageService {
+public class AWSs3FileStorageService implements FileStorageService {
   public static final String FILENAME = "filename";
   public static final String PRE_KEY_ID = "file_";
 
@@ -51,7 +50,7 @@ public class S3AWSFileStorageService implements FileStorageService {
   }
 
   @Override
-  public @Nullable InputStreamResource getFile(String storageId) {
+  public ByteArrayResource getFile(String storageId) {
     S3Client s3Client = createS3Client();
     GetObjectRequest getObjectRequest =
         GetObjectRequest.builder().bucket(bucketName).key(storageId).build();
@@ -59,12 +58,10 @@ public class S3AWSFileStorageService implements FileStorageService {
 
     try {
       byte[] bytesFile = s3ClientObject.readAllBytes();
-      ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytesFile);
-      return new InputStreamResource(byteArrayInputStream);
-    } catch (IOException e) {
-      e.printStackTrace();
+      return new ByteArrayResource(bytesFile);
+    } catch (IOException | S3Exception exception) {
+      throw new IllegalStateException(exception.getMessage());
     }
-    return null;
   }
 
   @Override

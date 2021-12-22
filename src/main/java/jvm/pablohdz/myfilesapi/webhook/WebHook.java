@@ -3,6 +3,7 @@ package jvm.pablohdz.myfilesapi.webhook;
 import java.net.Inet6Address;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -51,6 +52,10 @@ public class WebHook {
   }
 
   public EventHook createDeleteEvent(String fileId, String filename, Collection<String> notes) {
+    return new EventHook(TypeEvent.DELETE, fileId, filename, notes, createUriToFile(fileId));
+  }
+
+  public EventHook createDownloadEvent(String fileId, String filename, List<String> notes) {
     return new EventHook(TypeEvent.DELETE, fileId, filename, notes, createUriToFile(fileId));
   }
 }

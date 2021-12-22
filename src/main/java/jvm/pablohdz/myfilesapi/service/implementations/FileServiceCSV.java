@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
-import jvm.pablohdz.myfilesapi.entity.FileCSVData;
+import jvm.pablohdz.myfilesapi.dto.FileServiceDataResponse;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
 import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
 import jvm.pablohdz.myfilesapi.mapper.FileMapper;
@@ -22,7 +22,7 @@ import jvm.pablohdz.myfilesapi.webhook.WebHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -82,12 +82,24 @@ public class FileServiceCSV implements FileService {
   }
 
   @Override
-  public FileCSVData downloadById(String id) {
+  public FileServiceDataResponse download(String id) {
     MyFile file = getFileFromRepository(id);
     String storageId = file.getStorageId();
     String fileName = file.getName();
-    InputStreamResource data = fileStorageService.getFile(storageId);
-    return new FileCSVData(fileName, data);
+    ByteArrayResource data = fileStorageService.getFile(storageId);
+
+    sendDownloadEvent(file);
+
+    return new FileServiceDataResponse(fileName, data);
+  }
+
+  private void sendDownloadEvent(MyFile file) {
+    String id = file.getId();
+    String fileName = file.getName();
+
+    EventHook event = webHook.createDownloadEvent(id, fileName, List.of());
+    webHook.sendEvent(event);
+    logger.info("download event is sending, the file with the id: {} it was downloaded", id);
   }
 
   private MyFile getFileFromRepository(String id) {

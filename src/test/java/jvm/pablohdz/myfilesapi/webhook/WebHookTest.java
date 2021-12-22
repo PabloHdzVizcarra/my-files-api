@@ -2,7 +2,6 @@ package jvm.pablohdz.myfilesapi.webhook;
 
 import static jvm.pablohdz.myfilesapi.webhook.WebHook.LOCAL_SERVER_PORT;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -32,6 +31,15 @@ class WebHookTest {
     when(environment.getProperty(LOCAL_SERVER_PORT)).thenReturn("3000");
 
     EventHook event = underTest.createDeleteEvent(FILE_ID, FILENAME, NOTES_EMPTY);
+
+    assertThat(event).isNotNull().hasNoNullFieldsOrProperties().isInstanceOf(EventHook.class);
+  }
+
+  @Test
+  void givenCorrectData_whenCreateDownloadEvent_thenReturnEvent() {
+    when(environment.getProperty(LOCAL_SERVER_PORT)).thenReturn("3000");
+
+    EventHook event = underTest.createDownloadEvent(FILE_ID, FILENAME, NOTES_EMPTY);
 
     assertThat(event).isNotNull().hasNoNullFieldsOrProperties().isInstanceOf(EventHook.class);
   }

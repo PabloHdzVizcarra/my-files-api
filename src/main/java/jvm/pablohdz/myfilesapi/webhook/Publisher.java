@@ -1,5 +1,5 @@
 package jvm.pablohdz.myfilesapi.webhook;
 
 public interface Publisher {
-  void publish(EventHook event);
+  void publish(EventHook event) throws EventPublisherException;
 }

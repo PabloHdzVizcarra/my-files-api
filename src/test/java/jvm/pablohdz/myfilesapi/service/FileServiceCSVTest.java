@@ -11,9 +11,9 @@ import java.io.ByteArrayInputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
+import jvm.pablohdz.myfilesapi.dto.FileDto;
 import jvm.pablohdz.myfilesapi.dto.FileServiceDataResponse;
-import jvm.pablohdz.myfilesapi.entity.FileData;
+import jvm.pablohdz.myfilesapi.exception.FileInvalidExtension;
 import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
 import jvm.pablohdz.myfilesapi.mapper.FileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
@@ -21,6 +21,7 @@ import jvm.pablohdz.myfilesapi.model.User;
 import jvm.pablohdz.myfilesapi.repository.MyFileRepository;
 import jvm.pablohdz.myfilesapi.service.implementations.FileServiceCSV;
 import jvm.pablohdz.myfilesapi.webhook.EventHook;
+import jvm.pablohdz.myfilesapi.webhook.EventPublisherException;
 import jvm.pablohdz.myfilesapi.webhook.WebHook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,10 +48,12 @@ class FileServiceCSVTest {
   public static final String USERNAME = "john@terminator";
   public static final User USER = new User(USERNAME);
   public static final MyFile FILE_EMPTY = new MyFile();
-  public static final CSVFileDto FILE_DTO = new CSVFileDto();
+  public static final FileDto FILE_DTO = new FileDto();
   public static final String FILENAME = "example.csv";
   public static final MockMultipartFile MOCK_MULTIPART_FILE =
       new MockMultipartFile("test.csv", FILENAME, "csv", "example content".getBytes());
+  public static final MockMultipartFile FILE_PNG =
+      new MockMultipartFile("image", "image.png", "png", "example content".getBytes());
   public static final MyFile FILE_ID_NAME =
       new MyFile("file_ad879d", "example.csv", "s3/bucket/file_hjf83yh-as");
   public static final EventHook EVENT = new EventHook();
@@ -73,9 +76,9 @@ class FileServiceCSVTest {
     when(fileRepository.findById(FILE_ID)).thenReturn(Optional.of(CSV_FILE));
     when(fileStorageService.getFile(STORAGE_ID)).thenReturn(RESOURCE_CSV);
 
-    FileServiceDataResponse fileCSVData = underTest.download(FILE_ID);
+    FileServiceDataResponse file = underTest.download(FILE_ID);
 
-    assertThat(fileCSVData).isNotNull().isInstanceOf(Resource.class);
+    assertThat(file.getResource()).isNotNull().isInstanceOf(Resource.class);
   }
 
   @Test
@@ -91,27 +94,27 @@ class FileServiceCSVTest {
   void givenValidId_whenGetAllFilesByUserId_thenReturnCollectionOfFiles() {
     when(authenticationService.getCurrentUser()).thenReturn(USER);
     when(fileRepository.findAllByUser(USER)).thenReturn(List.of(FILE_EMPTY, FILE_EMPTY));
-    when(fileMapper.toCSVFileDto(FILE_EMPTY)).thenReturn(FILE_DTO);
+    when(fileMapper.fileToFileDto(FILE_EMPTY)).thenReturn(FILE_DTO);
 
-    Collection<CSVFileDto> collection = underTest.getAllFilesByUserId(USER_ID);
+    Collection<FileDto> collection = underTest.getFiles(USER_ID);
 
     assertThat(collection).asList().isNotEmpty().hasSize(2);
   }
 
   @Test
-  void whenUploadFile_thenSendEvent() {
+  void whenUploadFile_thenSendEvent() throws EventPublisherException {
     when(fileRepository.findByName(FILENAME)).thenReturn(Optional.empty());
     when(authenticationService.getCurrentUser()).thenReturn(USER);
     when(fileRepository.save(any())).thenReturn(FILE_ID_NAME);
     when(webHook.createAddEvent(any(), any(), any(), any())).thenReturn(EVENT);
 
-    underTest.uploadFile(MOCK_MULTIPART_FILE);
+    underTest.upload(MOCK_MULTIPART_FILE);
 
     Mockito.verify(webHook, times(1)).sendEvent(EVENT);
   }
 
   @Test
-  void whenUpdateFile_thenSendEvent() {
+  void whenUpdateFile_thenSendEvent() throws EventPublisherException {
     when(fileRepository.findById(FILE_ID)).thenReturn(Optional.of(FILE_ID_NAME));
     when(webHook.createUpdateEvent(any(), any(), any())).thenReturn(EVENT);
 
@@ -124,11 +127,11 @@ class FileServiceCSVTest {
   void givenValidId_whenDeleteFile() {
     when(fileRepository.findById(FILE_ID)).thenReturn(Optional.of(FILE_ID_NAME));
 
-    assertThatCode(() -> underTest.deleteFile(FILE_ID)).doesNotThrowAnyException();
+    assertThatCode(() -> underTest.delete(FILE_ID)).doesNotThrowAnyException();
   }
 
   @Test
-  void givenValidId_whenDownloadFile_thenSendDownloadEvent() {
+  void givenValidId_whenDownloadFile_thenSendDownloadEvent() throws EventPublisherException {
     when(fileRepository.findById(FILE_ID)).thenReturn(Optional.of(FILE_ID_NAME));
     when(fileStorageService.getFile(FILE_ID_NAME.getStorageId())).thenReturn(RESOURCE_CSV);
 
@@ -136,5 +139,13 @@ class FileServiceCSVTest {
 
     Mockito.verify(webHook, times(1)).createDownloadEvent(any(), any(), any());
     Mockito.verify(webHook, times(1)).sendEvent(any());
+  }
+
+  @Test
+  void givenFileOtherExtension_whenUpload_thenThrownException() {
+
+    assertThatThrownBy(() -> underTest.upload(FILE_PNG))
+        .isInstanceOf(FileInvalidExtension.class)
+        .hasMessageContaining(FILE_PNG.getOriginalFilename());
   }
 }

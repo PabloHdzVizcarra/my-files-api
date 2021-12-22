@@ -26,7 +26,7 @@ public class WebHook {
     return new EventHook(TypeEvent.ADDED, id, filename, notes, uri);
   }
 
-  public void sendEvent(EventHook event) {
+  public void sendEvent(EventHook event) throws EventPublisherException {
     publisher.publish(event);
   }
 
@@ -46,7 +46,6 @@ public class WebHook {
           .build()
           .toString();
     } catch (UnknownHostException e) {
-      e.printStackTrace();
       throw new IllegalStateException(e.getMessage());
     }
   }

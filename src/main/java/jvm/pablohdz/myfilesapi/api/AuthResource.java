@@ -26,12 +26,12 @@ public class AuthResource {
   }
 
   @GetMapping(value = "/active.account/{token}")
-  public void activeUser(@PathVariable(name = "token") String token) {
+  public void active(@PathVariable(name = "token") String token) {
     userService.activeAccount(token);
   }
 
   @PostMapping(value = "/login")
-  public ResponseEntity<AuthenticationResponse> login(
+  public ResponseEntity<AuthenticationResponse> signIn(
       @Valid @RequestBody LoginRequest loginRequest) {
     AuthenticationResponse response = userService.login(loginRequest);
     return ResponseEntity.ok(response);

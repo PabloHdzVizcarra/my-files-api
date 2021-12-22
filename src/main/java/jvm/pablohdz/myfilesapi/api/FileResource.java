@@ -5,13 +5,12 @@ import java.net.Inet6Address;
 import java.net.URI;
 import java.net.UnknownHostException;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
-import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
+import jvm.pablohdz.myfilesapi.dto.FileDto;
 import jvm.pablohdz.myfilesapi.dto.FileServiceDataResponse;
 import jvm.pablohdz.myfilesapi.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -42,8 +41,8 @@ public class FileResource {
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<CSVFileDto> upload(@RequestParam("file") MultipartFile file) {
-    CSVFileDto dto = fileService.uploadFile(file);
+  public ResponseEntity<FileDto> upload(@RequestParam("file") MultipartFile file) {
+    FileDto dto = fileService.upload(file);
     URI uri =
         ServletUriComponentsBuilder.fromCurrentRequest()
             .path("/{id}")
@@ -91,7 +90,7 @@ public class FileResource {
 
   @DeleteMapping("/{id}")
   public ResponseEntity<String> delete(@PathVariable("id") String id) {
-    fileService.deleteFile(id);
+    fileService.delete(id);
     return ResponseEntity.ok("file deleted successfully");
   }
 }

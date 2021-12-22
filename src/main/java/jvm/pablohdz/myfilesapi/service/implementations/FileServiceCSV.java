@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import jvm.pablohdz.myfilesapi.dto.CSVFileDataDto;
-import jvm.pablohdz.myfilesapi.dto.CSVFileDto;
+import jvm.pablohdz.myfilesapi.dto.FileDto;
 import jvm.pablohdz.myfilesapi.dto.FileServiceDataResponse;
 import jvm.pablohdz.myfilesapi.exception.CSVFileAlreadyRegisteredException;
+import jvm.pablohdz.myfilesapi.exception.FileInvalidExtension;
 import jvm.pablohdz.myfilesapi.exception.FileNotRegisterException;
+import jvm.pablohdz.myfilesapi.exception.WebHookException;
 import jvm.pablohdz.myfilesapi.mapper.FileMapper;
 import jvm.pablohdz.myfilesapi.model.MyFile;
 import jvm.pablohdz.myfilesapi.model.User;
@@ -18,6 +20,7 @@ import jvm.pablohdz.myfilesapi.service.AuthenticationService;
 import jvm.pablohdz.myfilesapi.service.FileStorageService;
 import jvm.pablohdz.myfilesapi.service.FileService;
 import jvm.pablohdz.myfilesapi.webhook.EventHook;
+import jvm.pablohdz.myfilesapi.webhook.EventPublisherException;
 import jvm.pablohdz.myfilesapi.webhook.WebHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +32,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileServiceCSV implements FileService {
+
+  public static final String CORRECT_FORMAT = ".csv";
   Logger logger = LoggerFactory.getLogger(FileServiceCSV.class);
   private final FileStorageService fileStorageService;
   private final AuthenticationService authenticationService;
@@ -52,18 +57,37 @@ public class FileServiceCSV implements FileService {
 
   @Override
   @Transactional
-  public CSVFileDto uploadFile(MultipartFile file) {
+  public FileDto upload(MultipartFile file) {
+    verifyExtensionFile(file);
     byte[] bytes = parseMultipartFileToBytes(file);
     String fileName = getFileName(file);
     verifyIfFileHasAlreadyRegistered(fileName);
 
     User currentUser = authenticationService.getCurrentUser();
     String keyFile = fileStorageService.upload(bytes, fileName, currentUser.getUsername());
-    MyFile CSVFile = createFile(fileName, currentUser, keyFile);
-    MyFile fileSaved = fileRepository.save(CSVFile);
+    MyFile fileToSave = createFile(fileName, currentUser, keyFile);
+    MyFile fileSaved = fileRepository.save(fileToSave);
 
     sendAddedEvent(fileSaved);
-    return fileMapper.myFileToCSVFileDto(fileSaved);
+    return fileMapper.fileToFileDto(fileSaved);
+  }
+
+  /**
+   * Verify if the current format of the file is equals to .csv, the application only have the
+   * functionality to handle files with format CSV
+   *
+   * @param file data of the file
+   */
+  private void verifyExtensionFile(MultipartFile file) {
+    String originalFilename = file.getOriginalFilename();
+    if (isNotValidExtensionFile(originalFilename)) {
+      logger.debug("An attempt is made to save a file with an invalid extension");
+      throw new FileInvalidExtension(originalFilename);
+    }
+  }
+
+  private boolean isNotValidExtensionFile(String originalFilename) {
+    return originalFilename == null || !originalFilename.endsWith(CORRECT_FORMAT);
   }
 
   /**
@@ -78,7 +102,15 @@ public class FileServiceCSV implements FileService {
             fileSaved.getName(),
             List.of(),
             "http://localhost:8080/api/files/" + fileSaved.getId());
-    webHook.sendEvent(addEvent);
+    publishEventInHook(addEvent);
+  }
+
+  private void publishEventInHook(EventHook event) {
+    try {
+      webHook.sendEvent(event);
+    } catch (EventPublisherException e) {
+      throw new WebHookException(e.getMessage());
+    }
   }
 
   @Override
@@ -98,7 +130,7 @@ public class FileServiceCSV implements FileService {
     String fileName = file.getName();
 
     EventHook event = webHook.createDownloadEvent(id, fileName, List.of());
-    webHook.sendEvent(event);
+    publishEventInHook(event);
     logger.info("download event is sending, the file with the id: {} it was downloaded", id);
   }
 
@@ -119,13 +151,13 @@ public class FileServiceCSV implements FileService {
     sendEventUpdateToWebHook(id, originalFilename);
 
     logger.info("new update event its created to file with id: {}", id);
-    return fileMapper.toCSVFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
+    return fileMapper.toFileDataDto(originalFilename, contentType, bytesFromMultipartFile);
   }
 
   private void sendEventUpdateToWebHook(String id, String originalFilename) {
     EventHook updateEvent = webHook.createUpdateEvent(id, originalFilename, List.of());
 
-    webHook.sendEvent(updateEvent);
+    publishEventInHook(updateEvent);
   }
 
   private void updateFileInRepository(String originalFilename, MyFile foundFile) {
@@ -187,17 +219,17 @@ public class FileServiceCSV implements FileService {
 
   @Override
   @Transactional(readOnly = true)
-  public Collection<CSVFileDto> getAllFilesByUserId(String userId) {
+  public Collection<FileDto> getFiles(String userId) {
     User user = authenticationService.getCurrentUser();
     Collection<MyFile> allFilesByUser = fileRepository.findAllByUser(user);
 
     return allFilesByUser.stream()
-        .map(fileMapper::toCSVFileDto)
+        .map(fileMapper::fileToFileDto)
         .collect(Collectors.toUnmodifiableList());
   }
 
   @Override
-  public void deleteFile(String id) {
+  public void delete(String id) {
     MyFile file = getFileByIdFromRepository(id);
     deleteFileFromStorageServiceFiles(file);
     deleteFileFromRepositoryByFile(id, file);
@@ -208,7 +240,7 @@ public class FileServiceCSV implements FileService {
 
   private void createEventDeleteFile(String id, String fileName) {
     EventHook event = webHook.createDeleteEvent(id, fileName, List.of());
-    webHook.sendEvent(event);
+    publishEventInHook(event);
     logger.debug("new delete event is send, the resource that be deleted contains the id: {}", id);
   }
 

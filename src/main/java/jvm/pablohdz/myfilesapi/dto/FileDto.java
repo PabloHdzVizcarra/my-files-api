@@ -1,6 +1,6 @@
 package jvm.pablohdz.myfilesapi.dto;
 
-public class CSVFileDto {
+public class FileDto {
   private String id;
   private String name;
   private Double version;
@@ -8,7 +8,7 @@ public class CSVFileDto {
   private String updateAt;
   private String storageId;
 
-  public CSVFileDto() {}
+  public FileDto() {}
 
   public String getId() {
     return id;
